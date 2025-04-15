@@ -66,6 +66,21 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Залишаємо лише можливість завантаження головного зображення -->
+                {% if news and news.images and news.images.count() > 0 %}
+                <!-- Видалення наявних додаткових зображень -->
+                <div class="mt-4 mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm">В системі є додаткові зображення для цієї новини. Вони будуть видалені при збереженні змін.</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Кнопки -->
@@ -100,6 +115,72 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
+// Функція для показу модального вікна підтвердження видалення зображення
+function showDeleteImageConfirmation(imageId) {
+    // Створюємо модальне вікно підтвердження
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    
+    const modal = document.createElement('div');
+    modal.className = 'bg-white rounded-lg p-6 max-w-sm mx-auto';
+    
+    modal.innerHTML = `
+        <div class="text-center mb-4">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Підтвердження видалення</h3>
+            <p class="text-sm text-gray-500">Ви впевнені, що хочете видалити це зображення? Ця дія незворотна.</p>
+        </div>
+        <div class="flex justify-between">
+            <button id="cancelDelete" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                Скасувати
+            </button>
+            <button id="confirmDelete" class="px-4 py-2 bg-red-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Видалити
+            </button>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Обробники подій для кнопок
+    document.getElementById('cancelDelete').addEventListener('click', () => {
+        document.body.removeChild(overlay);
+    });
+    
+    document.getElementById('confirmDelete').addEventListener('click', () => {
+        // Видаляємо зображення через AJAX
+        fetch(`/news/image/delete/${imageId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Знаходимо і видаляємо елемент з DOM
+                const imageElement = document.querySelector(`button[onclick="showDeleteImageConfirmation('${imageId}')"]`).closest('.relative');
+                if (imageElement) {
+                    imageElement.remove();
+                }
+                showNotification('Зображення успішно видалено', 'success');
+            } else {
+                showNotification(`Помилка при видаленні зображення: ${data.error || 'Невідома помилка'}`, 'error');
+            }
+            document.body.removeChild(overlay);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification(`Помилка при видаленні зображення: ${error.message || 'Невідома помилка'}`, 'error');
+            document.body.removeChild(overlay);
+        });
+    });
+}
+
 // Ініціалізація TinyMCE
 tinymce.init({
     selector: '#content',
@@ -129,39 +210,125 @@ tinymce.init({
     }
 });
 
-// Попередній перегляд зображення
+// Попередній перегляд зображення та обробка завантаження файлів
 document.addEventListener('DOMContentLoaded', function() {
+    // Обробка головного зображення
     const imageInput = document.getElementById('image');
-    const imagePreview = imageInput.parentElement.previousElementSibling.querySelector('img, div');
-    
-    imageInput.addEventListener('change', function(e) {
-        if (this.files && this.files[0]) {
-            const file = this.files[0];
-            
-            // Перевірка розміру файлу (5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                showNotification('Файл занадто великий. Максимальний розмір - 5MB', 'error');
-                this.value = '';
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // Якщо є попереднє зображення
-                if (imagePreview.tagName === 'IMG') {
-                    imagePreview.src = e.target.result;
-                } else {
-                    // Якщо це placeholder
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.alt = 'Preview';
-                    img.className = 'h-32 w-32 object-cover rounded-lg shadow-sm';
-                    imagePreview.parentNode.replaceChild(img, imagePreview);
+    if (imageInput) {
+        const imagePreview = imageInput.parentElement.previousElementSibling.querySelector('img, div');
+        
+        imageInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                
+                // Перевірка розміру файлу (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification('Файл занадто великий. Максимальний розмір - 5MB', 'error');
+                    this.value = '';
+                    return;
                 }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Якщо є попереднє зображення
+                    if (imagePreview.tagName === 'IMG') {
+                        imagePreview.src = e.target.result;
+                    } else {
+                        // Якщо це placeholder
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Preview';
+                        img.className = 'h-32 w-32 object-cover rounded-lg shadow-sm';
+                        imagePreview.parentNode.replaceChild(img, imagePreview);
+                    }
+                }
+                reader.readAsDataURL(file);
             }
-            reader.readAsDataURL(file);
-        }
-    });
+        });
+    }
+    
+    // Обробка завантаження додаткових зображень
+    const galleryImagesInput = document.getElementById('images');
+    if (galleryImagesInput) {
+        const filePreview = document.getElementById('file-preview');
+        const dropZone = galleryImagesInput.closest('.border-dashed');
+        
+        galleryImagesInput.addEventListener('change', function() {
+            filePreview.innerHTML = ''; // Очищаємо попередні прев'ю
+            
+            if (this.files.length > 0) {
+                filePreview.classList.remove('hidden');
+                
+                for (let i = 0; i < this.files.length; i++) {
+                    const file = this.files[i];
+                    
+                    // Перевірка розміру файлу (5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        showNotification(`Файл ${file.name} занадто великий. Максимальний розмір - 5MB`, 'error');
+                        continue;
+                    }
+                    
+                    // Перевірка типу файлу
+                    if (!file.type.match('image.*')) {
+                        showNotification(`Файл ${file.name} не є зображенням`, 'error');
+                        continue;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewContainer = document.createElement('div');
+                        previewContainer.className = 'relative';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'w-full h-24 object-cover rounded-lg shadow-sm';
+                        img.alt = file.name;
+                        
+                        const fileName = document.createElement('div');
+                        fileName.className = 'absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate rounded-b-lg';
+                        fileName.textContent = file.name;
+                        
+                        previewContainer.appendChild(img);
+                        previewContainer.appendChild(fileName);
+                        filePreview.appendChild(previewContainer);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                filePreview.classList.add('hidden');
+            }
+        });
+        
+        // Функціональність перетягування файлів
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.add('border-blue-500');
+            this.classList.add('bg-blue-50');
+        });
+        
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('border-blue-500');
+            this.classList.remove('bg-blue-50');
+        });
+        
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('border-blue-500');
+            this.classList.remove('bg-blue-50');
+            
+            if (e.dataTransfer.files.length) {
+                galleryImagesInput.files = e.dataTransfer.files;
+                // Викликаємо подію change вручну
+                const event = new Event('change', { bubbles: true });
+                galleryImagesInput.dispatchEvent(event);
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

@@ -28,6 +28,12 @@
                         <i class="fas fa-newspaper mr-3"></i>
                         <span>Статті</span>
                     </a>
+                    <a href="{{ url_for('admin.own_works') }}" 
+                       class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg
+                              {% if request.endpoint == 'admin.own_works' %}bg-gray-700 text-white{% endif %}">
+                        <i class="fas fa-paint-brush mr-3"></i>
+                        <span>Власні роботи</span>
+                    </a>
                     <a href="{{ url_for('admin.users') }}" 
                        class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg
                               {% if request.endpoint == 'admin.users' %}bg-gray-700 text-white{% endif %}">
@@ -53,6 +59,10 @@
             <a href="{{ url_for('admin.news') }}" 
                class="text-gray-300 hover:text-white {% if request.endpoint == 'admin.news' %}text-white{% endif %}">
                 <i class="fas fa-newspaper text-xl"></i>
+            </a>
+            <a href="{{ url_for('admin.own_works') }}" 
+               class="text-gray-300 hover:text-white {% if request.endpoint == 'admin.own_works' %}text-white{% endif %}">
+                <i class="fas fa-paint-brush text-xl"></i>
             </a>
             <a href="{{ url_for('admin.users') }}" 
                class="text-gray-300 hover:text-white {% if request.endpoint == 'admin.users' %}text-white{% endif %}">
@@ -98,6 +108,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('admin.news') }}">Статті</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.own_works') }}">Власні роботи</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('admin.achievements') }}">Досягнення</a>

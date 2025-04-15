@@ -40,12 +40,20 @@
     </div>
     
     <div class="bg-white rounded-lg shadow p-6">
-       
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-purple-500 bg-opacity-75">
+                <i class="fas fa-paint-brush text-2xl text-white"></i>
+            </div>
+            <div class="ml-4">
+                <h2 class="text-gray-600 text-sm">Власні роботи</h2>
+                <p class="text-2xl font-semibold text-gray-700">{{ stats.own_works }}</p>
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- Останні дії -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
     <!-- Останні статті -->
     <div class="bg-white rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
@@ -68,6 +76,35 @@
                     <div class="ml-4">
                         <h3 class="text-lg font-medium text-gray-800">{{ news_item.title }}</h3>
                         <p class="text-sm text-gray-500">{{ news_item.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Останні власні роботи -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-semibold text-gray-800">Останні власні роботи</h2>
+                <a href="{{ url_for('admin.own_works') }}" class="text-blue-500 hover:text-blue-600">Всі роботи</a>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="space-y-4">
+                {% for work in recent_own_works %}
+                <div class="flex items-start">
+                    {% if work.image_url %}
+                    <img src="{{ work.image_url }}" alt="{{ work.title }}" class="w-16 h-16 rounded object-cover">
+                    {% else %}
+                    <div class="w-16 h-16 rounded bg-gray-200 flex items-center justify-center">
+                        <i class="fas fa-paint-brush text-gray-400 text-2xl"></i>
+                    </div>
+                    {% endif %}
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-800">{{ work.title }}</h3>
+                        <p class="text-sm text-gray-500">{{ work.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
                     </div>
                 </div>
                 {% endfor %}

@@ -93,6 +93,7 @@
             </div>
         </div>
         
+        
         <!-- Навігація -->
         <div class="mt-8 flex justify-between items-center">
             <a href="{{ url_for('news.index') }}" 
@@ -127,24 +128,62 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('button[data-news-id]').forEach(button => {
         button.addEventListener('click', function() {
             const newsId = this.dataset.newsId;
-            if (confirm('Ви впевнені, що хочете видалити цю новину?')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/news/delete/${newsId}`;
-
-                // Додаємо CSRF токен
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = 'csrf_token';
-                csrfInput.value = '{{ csrf_token() }}';
-                form.appendChild(csrfInput);
-
-                document.body.appendChild(form);
-                form.submit();
-            }
+            showDeleteConfirmation(newsId);
         });
     });
 });
+
+// Функція для показу модального вікна підтвердження видалення
+function showDeleteConfirmation(newsId) {
+    // Створюємо модальне вікно підтвердження
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    
+    const modal = document.createElement('div');
+    modal.className = 'bg-white rounded-lg p-6 max-w-sm mx-auto';
+    
+    modal.innerHTML = `
+        <div class="text-center mb-4">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Підтвердження видалення</h3>
+            <p class="text-sm text-gray-500">Ви впевнені, що хочете видалити цю новину? Ця дія незворотна.</p>
+        </div>
+        <div class="flex justify-between">
+            <button id="cancelDelete" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                Скасувати
+            </button>
+            <button id="confirmDelete" class="px-4 py-2 bg-red-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Видалити
+            </button>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Обробники подій для кнопок
+    document.getElementById('cancelDelete').addEventListener('click', () => {
+        document.body.removeChild(overlay);
+    });
+    
+    document.getElementById('confirmDelete').addEventListener('click', () => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/news/delete/${newsId}`;
+
+        // Додаємо CSRF токен
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = '{{ csrf_token() }}';
+        form.appendChild(csrfInput);
+
+        document.body.appendChild(form);
+        form.submit();
+    });
+}
 
 
 </script>

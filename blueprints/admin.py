@@ -12,7 +12,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 from flask_login import login_required, current_user
-from models import db, User, News, Image, Monument, MonumentImage
+from models import db, User, News, Image, Monument, MonumentImage, OwnWork
 from sqlalchemy import text
 from functools import wraps
 from werkzeug.utils import secure_filename
@@ -47,6 +47,7 @@ def index():
     stats = {
         'users': User.query.count(),
         'news': News.query.count(),
+        'own_works': OwnWork.query.count(),
         'images': Image.query.count(),
         'monuments': Monument.query.count(),
         'monument_images': MonumentImage.query.count()
@@ -58,6 +59,9 @@ def index():
     # Останні новини
     recent_news = News.query.order_by(News.created_at.desc()).limit(5).all()
     
+    # Останні власні роботи
+    recent_own_works = OwnWork.query.order_by(OwnWork.created_at.desc()).limit(5).all()
+    
     # Останні користувачі
     recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
     
@@ -66,6 +70,7 @@ def index():
                          stats=stats,
                          recent_events=recent_events,
                          recent_news=recent_news,
+                         recent_own_works=recent_own_works,
                          recent_users=recent_users)
 
 @admin_bp.route('/users')
@@ -103,6 +108,15 @@ def news():
     return render_template('admin/news.html',
                          title='Новини',
                          news=news_items)
+
+@admin_bp.route('/own-works')
+@admin_required
+def own_works():
+    """Управління власними роботами"""
+    own_works_items = OwnWork.query.order_by(OwnWork.created_at.desc()).all()
+    return render_template('admin/own_works.html',
+                         title='Власні роботи',
+                         own_works=own_works_items)
 
 @admin_bp.route('/achievements')
 @admin_required
@@ -156,6 +170,177 @@ def monuments():
                          title='Пам\'ятники',
                          monuments=monuments,
                          search_query=search_query)
+
+# CRUD для власних робіт
+
+@admin_bp.route('/own-works/create', methods=['GET', 'POST'])
+@admin_required
+def create_own_work():
+    """Створення нової власної роботи"""
+    from forms.own_work import OwnWorkForm
+    
+    form = OwnWorkForm()
+    
+    if form.validate_on_submit():
+        # Створюємо нову власну роботу
+        own_work = OwnWork(
+            title=form.title.data,
+            content=form.content.data,
+            summary=form.summary.data,
+            category=form.category.data,
+            is_published=form.is_published.data,
+            author_id=current_user.id
+        )
+        
+        db.session.add(own_work)
+        db.session.commit()
+        
+        # Зберігаємо зображення
+        if form.images.data and any(form.images.data):
+            for image_file in form.images.data:
+                if image_file and allowed_file(image_file.filename):
+                    try:
+                        # Налаштування Cloudinary
+                        cloudinary.config(
+                            cloud_name=current_app.config['CLOUDINARY_CLOUD_NAME'],
+                            api_key=current_app.config['CLOUDINARY_API_KEY'],
+                            api_secret=current_app.config['CLOUDINARY_API_SECRET']
+                        )
+                        
+                        # Генеруємо унікальне ім'я файлу
+                        timestamp = int(time.time())
+                        public_id = f"own_works/{own_work.id}/{timestamp}"
+                        
+                        # Завантажуємо зображення в Cloudinary
+                        upload_result = cloudinary.uploader.upload(
+                            image_file,
+                            public_id=public_id,
+                            folder="own_works"
+                        )
+                        
+                        # Зберігаємо інформацію про зображення в базі даних
+                        image = Image(
+                            filename=upload_result['secure_url'],
+                            cloudinary_public_id=public_id,
+                            is_own_work=True,
+                            own_work_id=own_work.id
+                        )
+                        
+                        db.session.add(image)
+                    except Exception as e:
+                        current_app.logger.error(f"Помилка завантаження зображення: {str(e)}")
+                        traceback.print_exc()
+        
+        db.session.commit()
+        flash('Власну роботу успішно створено', 'success')
+        return redirect(url_for('admin.own_works'))
+    
+    return render_template('admin/own_work_form.html',
+                         title='Створення власної роботи',
+                         form=form,
+                         action='create')
+
+@admin_bp.route('/own-works/<int:own_work_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_own_work(own_work_id):
+    """Редагування власної роботи"""
+    from forms.own_work import OwnWorkForm
+    
+    own_work = OwnWork.query.get_or_404(own_work_id)
+    form = OwnWorkForm(obj=own_work)
+    
+    if form.validate_on_submit():
+        # Оновлюємо дані власної роботи
+        own_work.title = form.title.data
+        own_work.content = form.content.data
+        own_work.summary = form.summary.data
+        own_work.category = form.category.data
+        own_work.is_published = form.is_published.data
+        own_work.updated_at = datetime.utcnow()
+        
+        # Зберігаємо зображення
+        if form.images.data and any(form.images.data):
+            for image_file in form.images.data:
+                if image_file and allowed_file(image_file.filename):
+                    try:
+                        # Налаштування Cloudinary
+                        cloudinary.config(
+                            cloud_name=current_app.config['CLOUDINARY_CLOUD_NAME'],
+                            api_key=current_app.config['CLOUDINARY_API_KEY'],
+                            api_secret=current_app.config['CLOUDINARY_API_SECRET']
+                        )
+                        
+                        # Генеруємо унікальне ім'я файлу
+                        timestamp = int(time.time())
+                        public_id = f"own_works/{own_work.id}/{timestamp}"
+                        
+                        # Завантажуємо зображення в Cloudinary
+                        upload_result = cloudinary.uploader.upload(
+                            image_file,
+                            public_id=public_id,
+                            folder="own_works"
+                        )
+                        
+                        # Зберігаємо інформацію про зображення в базі даних
+                        image = Image(
+                            filename=upload_result['secure_url'],
+                            cloudinary_public_id=public_id,
+                            is_own_work=True,
+                            own_work_id=own_work.id
+                        )
+                        
+                        db.session.add(image)
+                    except Exception as e:
+                        current_app.logger.error(f"Помилка завантаження зображення: {str(e)}")
+                        traceback.print_exc()
+        
+        db.session.commit()
+        flash('Власну роботу успішно оновлено', 'success')
+        return redirect(url_for('admin.own_works'))
+    
+    # Отримуємо існуючі зображення для відображення
+    images = Image.query.filter_by(is_own_work=True, own_work_id=own_work.id).all()
+    
+    return render_template('admin/own_work_form.html',
+                         title='Редагування власної роботи',
+                         form=form,
+                         action='edit',
+                         own_work=own_work,
+                         images=images)
+
+@admin_bp.route('/own-works/<int:own_work_id>/delete', methods=['POST'])
+@admin_required
+def delete_own_work(own_work_id):
+    """Видалення власної роботи"""
+    own_work = OwnWork.query.get_or_404(own_work_id)
+    
+    # Видаляємо зображення з Cloudinary
+    images = Image.query.filter_by(is_own_work=True, own_work_id=own_work.id).all()
+    
+    for image in images:
+        try:
+            if image.cloudinary_public_id:
+                # Налаштування Cloudinary
+                cloudinary.config(
+                    cloud_name=current_app.config['CLOUDINARY_CLOUD_NAME'],
+                    api_key=current_app.config['CLOUDINARY_API_KEY'],
+                    api_secret=current_app.config['CLOUDINARY_API_SECRET']
+                )
+                
+                # Видаляємо зображення з Cloudinary
+                cloudinary.uploader.destroy(image.cloudinary_public_id)
+        except Exception as e:
+            current_app.logger.error(f"Помилка видалення зображення з Cloudinary: {str(e)}")
+        
+        # Видаляємо запис про зображення з бази даних
+        db.session.delete(image)
+    
+    # Видаляємо власну роботу
+    db.session.delete(own_work)
+    db.session.commit()
+    
+    flash('Власну роботу успішно видалено', 'success')
+    return redirect(url_for('admin.own_works'))
 
 # CRUD для новин
 @admin_bp.route('/news/create', methods=['GET', 'POST'])
@@ -248,6 +433,16 @@ def edit_news(news_id):
                     api_secret=current_app.config['CLOUDINARY_API_SECRET']
                 )
                 
+                # Видаляємо всі старі зображення новини
+                for old_image in news.images:
+                    if old_image.cloudinary_public_id:
+                        try:
+                            cloudinary.uploader.destroy(old_image.cloudinary_public_id)
+                            current_app.logger.info(f"Зображення видалено з Cloudinary: {old_image.cloudinary_public_id}")
+                        except Exception as e:
+                            current_app.logger.error(f"Помилка видалення зображення з Cloudinary: {str(e)}")
+                    db.session.delete(old_image)
+                
                 # Генеруємо унікальне ім'я файлу
                 filename = secure_filename(image.filename)
                 public_id = f"news_{int(time.time())}_{filename}"
@@ -271,7 +466,7 @@ def edit_news(news_id):
                     fetch_format="auto"
                 )[0]
                 
-                # Створюємо запис в базі даних
+                # Створюємо новий запис в базі даних
                 new_image = Image(
                     filename=upload_result['secure_url'],
                     thumbnail=thumbnail_url,

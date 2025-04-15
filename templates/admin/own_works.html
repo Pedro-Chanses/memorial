@@ -1,0 +1,106 @@
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
+<div class="space-y-6">
+    <!-- Заголовок та кнопка додавання -->
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-semibold text-gray-900">Управління власними роботами</h1>
+        <a href="{{ url_for('own_works.create') }}" 
+           class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+            <i class="fas fa-plus mr-2"></i>
+            Додати роботу
+        </a>
+    </div>
+    
+    <!-- Таблиця Власних робіт -->
+    <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>    
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Зображення</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Заголовок</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Категорія</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Автор</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата</th>
+                        <th scope="col" class="relative px-6 py-3">
+                            <span class="sr-only">Дії</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for work in own_works %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if work.image_url %}
+                            <div class="h-16 w-16 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100">
+                                <img class="w-full h-full object-contain" src="{{ work.image_url|replace('http:', 'https:') }}" alt="{{ work.title }}">
+                            </div>
+                            {% else %}
+                            <div class="h-16 w-16 rounded-lg bg-gray-100 flex items-center justify-center">
+                                <i class="fas fa-paint-brush text-gray-400 text-xl"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900 truncate max-w-md">{{ work.title }}</div>
+                            <div class="text-sm text-gray-500 truncate max-w-md">{{ work.summary or work.content[:100]|safe }}...</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ work.category }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ work.author.name }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ work.created_at.strftime('%d.%m.%Y') }}</div>
+                            <div class="text-sm text-gray-500">{{ work.created_at.strftime('%H:%M') }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <a href="{{ url_for('own_works.edit', work_id=work.id) }}" 
+                                   class="inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                    <i class="fas fa-edit mr-1"></i> Редагувати
+                                </a>
+                                <button data-work-id="{{ work.id }}"
+                                        class="inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                    <i class="fas fa-trash-alt mr-1"></i> Видалити
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Додаємо обробники кліку для кнопок видалення
+    document.querySelectorAll('button[data-work-id]').forEach(button => {
+        button.addEventListener('click', function() {
+            const workId = this.dataset.workId;
+            if (confirm('Ви впевнені, що хочете видалити цю роботу?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/own-works/${workId}/delete`;
+
+                // Додаємо CSRF токен
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = '{{ csrf_token() }}';
+                form.appendChild(csrfInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

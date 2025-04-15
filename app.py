@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_migrate import Migrate
 from extensions import db, login_manager, migrate, mail, cache, limiter, babel, get_locale, get_timezone
-from models import User, News
+from models import User, News, OwnWork
 from blueprints.main import main_bp
 from blueprints.auth import auth_bp
 from blueprints.admin import admin_bp
@@ -11,6 +11,7 @@ from blueprints.news import news_bp
 from blueprints.excel_routes import excel_bp
 from blueprints.monument_routes import monument_bp
 from blueprints.simple_edit import simple_edit_bp  # Новий blueprint для простого редагування
+from blueprints.own_works import own_works_bp  # Blueprint для власних робіт
 import os
 import logging
 from logging.handlers import RotatingFileHandler
@@ -114,6 +115,7 @@ def create_app(config_name=None):
     app.register_blueprint(excel_bp)
     app.register_blueprint(monument_bp)
     app.register_blueprint(simple_edit_bp, url_prefix='/simple')
+    app.register_blueprint(own_works_bp, url_prefix='/own-works')
     
     # Фільтр для адаптації URL зображень
     @app.template_filter('adapt_url')

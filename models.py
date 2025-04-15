@@ -90,6 +90,58 @@ class News(db.Model):
     def __repr__(self):
         return f'<News {self.title}>'
 
+class OwnWork(db.Model):
+    """Модель власних робіт"""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(128), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    is_published = db.Column(db.Boolean, default=True)
+    views = db.Column(db.Integer, default=0)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    category = db.Column(db.String(32), default='work')  # Категорія роботи
+    summary = db.Column(db.Text, nullable=True)  # Короткий опис
+    main_image = db.Column(db.String(255), nullable=True)  # URL головного зображення
+    
+    # Відношення
+    author = db.relationship('User', backref=db.backref('own_works', lazy='dynamic'))
+    images = db.relationship('Image', backref='own_work', lazy='dynamic',
+                           primaryjoin="and_(Image.own_work_id==OwnWork.id, "
+                                      "Image.is_own_work==True)",
+                           cascade="all, delete-orphan")
+    
+    @property
+    def image_url(self):
+        """Повертає URL першого зображення роботи"""
+        first_image = self.images.first()
+        if first_image:
+            if first_image.cloudinary_public_id:
+                url = first_image.filename  # В filename зберігається повний URL з Cloudinary
+                # Переконуємося, що URL використовує HTTPS
+                if url and url.startswith('http:'):
+                    url = url.replace('http:', 'https:')
+                return url
+            return first_image.filename
+        return None
+    
+    @property
+    def thumbnail_url(self):
+        """Повертає URL мініатюри першого зображення роботи"""
+        first_image = self.images.first()
+        if first_image:
+            if first_image.cloudinary_public_id:
+                url = first_image.thumbnail  # В thumbnail зберігається URL мініатюри з Cloudinary
+                # Переконуємося, що URL використовує HTTPS
+                if url and url.startswith('http:'):
+                    url = url.replace('http:', 'https:')
+                return url
+            return first_image.thumbnail
+        return None
+    
+    def __repr__(self):
+        return f'<OwnWork {self.title}>'
+
 class Image(db.Model):
     """Модель зображень"""
     id = db.Column(db.Integer, primary_key=True)
@@ -98,7 +150,11 @@ class Image(db.Model):
     cloudinary_public_id = db.Column(db.String(255))  # ID зображення в Cloudinary
     is_news = db.Column(db.Boolean, default=False)
     is_gallery = db.Column(db.Boolean, default=False)
+    is_own_work = db.Column(db.Boolean, default=False)  # Новий прапорець для власних робіт
+    is_main = db.Column(db.Boolean, default=False)  # Прапорець для головного зображення
     news_id = db.Column(db.Integer, db.ForeignKey('news.id', ondelete='CASCADE'))
+    gallery_id = db.Column(db.Integer, nullable=True)  # Видалено зовнішній ключ
+    own_work_id = db.Column(db.Integer, db.ForeignKey('own_work.id', ondelete='CASCADE'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     description = db.Column(db.Text)
     views = db.Column(db.Integer, default=0)
