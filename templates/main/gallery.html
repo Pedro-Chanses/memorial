@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    /* Стилі для ефекту збільшення зображення при наведенні курсора */
+    .gallery-item {
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .gallery-image {
+        transition: transform 0.5s ease;
+    }
+    
+    .gallery-item:hover .gallery-image {
+        transform: scale(1.2);
+    }
+    
+    .gallery-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+        color: white;
+        padding: 15px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .gallery-item:hover .gallery-overlay {
+        opacity: 1;
+    }
+    
+    /* Стилі для модальних вікон */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        overflow: hidden;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.show {
+        display: flex;
+    }
+    
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: white;
+        font-size: 30px;
+        cursor: pointer;
+        z-index: 1010;
+    }
+    
+    .modal-image-container {
+        width: 90%;
+        height: 80%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    
+    .modal-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+        color: white;
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-10">
+    <div class="container mx-auto px-4">
+        <!-- Заголовок -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">Галерея подій</h1>
+            <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+        </div>
+
+
+
+    <!-- Галерея -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10" id="gallery">
+        {% for image in images.items %}
+        <div class="gallery-item rounded-lg shadow-lg hover:shadow-xl transition duration-300 h-64" onclick="document.getElementById('modal{{ image.id }}').style.display='flex';">
+            <img src="{{ image.filename|replace('http:', 'https:') }}"
+                 alt="{{ image.description }}"
+                 class="gallery-image w-full h-full object-contain">
+            
+            <div class="gallery-overlay flex flex-col justify-end">
+                {% if image.title %}
+                    <h3 class="text-xl font-bold mb-1">{{ image.title }}</h3>
+                {% endif %}
+                {% if image.description %}
+                    <p class="text-sm opacity-90 line-clamp-2">{{ image.description }}</p>
+                {% endif %}
+                <div class="mt-2 text-xs opacity-80">
+                    <i class="fas fa-calendar mr-1"></i> {{ image.created_at.strftime('%d.%m.%Y') }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальне вікно для зображення -->
+        <div id="modal{{ image.id }}" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); z-index: 1000; overflow: hidden; align-items: center; justify-content: center;" onclick="if(event.target === this) { this.style.display='none'; document.body.style.overflow=''; }">
+            <!-- Кнопка закриття -->
+            <div style="position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; z-index: 1010;" onclick="document.getElementById('modal{{ image.id }}').style.display='none'; document.body.style.overflow='';">
+                <i class="fas fa-times"></i>
+            </div>
+            
+            <!-- Зображення на весь екран -->
+            <div style="width: 90%; height: 80%; display: flex; align-items: center; justify-content: center;">
+                <img src="{{ image.filename|replace('http:', 'https:') }}"
+                     alt="{{ image.description }}"
+                     style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            </div>
+            
+            <!-- Інформація про зображення -->
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%); color: white; padding: 20px;">
+                <h3 class="text-xl font-bold">{{ image.title or 'Фото події' }}</h3>
+                {% if image.description %}
+                    <p class="text-gray-300 mt-1">{{ image.description }}</p>
+                {% endif %}
+                <div class="mt-2 text-gray-400 text-sm">
+                    <i class="fas fa-calendar"></i> {{ image.created_at.strftime('%d.%m.%Y') }}
+                    {% if image.location %}
+                        <span class="mx-2">|</span>
+                        <i class="fas fa-map-marker-alt"></i> {{ image.location }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Пагінація -->
+    {% if images.pages > 1 %}
+    <div class="flex justify-center">
+        <nav class="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            <!-- Попередня сторінка -->
+            {% if images.has_prev %}
+            <a href="{{ url_for('main.gallery', page=images.prev_num, sort=request.args.get('sort', 'newest')) }}" 
+               class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            {% else %}
+            <span class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-500 cursor-not-allowed">
+                <i class="fas fa-chevron-left"></i>
+            </span>
+            {% endif %}
+            
+            <!-- Номери сторінок -->
+            {% for page in images.iter_pages() %}
+                {% if page %}
+                    {% if page == images.page %}
+                    <span class="relative inline-flex items-center px-4 py-2 border border-red-500 bg-red-50 text-sm font-medium text-red-600">
+                        {{ page }}
+                    </span>
+                    {% else %}
+                    <a href="{{ url_for('main.gallery', page=page, sort=request.args.get('sort', 'newest')) }}" 
+                       class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        {{ page }}
+                    </a>
+                    {% endif %}
+                {% else %}
+                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                        ...
+                    </span>
+                {% endif %}
+            {% endfor %}
+            
+            <!-- Наступна сторінка -->
+            {% if images.has_next %}
+            <a href="{{ url_for('main.gallery', page=images.next_num, sort=request.args.get('sort', 'newest')) }}" 
+               class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% else %}
+            <span class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-500 cursor-not-allowed">
+                <i class="fas fa-chevron-right"></i>
+            </span>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Функції для модальних вікон
+function openModal(modalId) {
+    console.log('Opening modal:', modalId);
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    } else {
+        console.error('Modal not found:', modalId);
+    }
+}
+
+function closeModal(modalId) {
+    console.log('Closing modal:', modalId);
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+// Додаємо обробники подій після завантаження DOM
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded');
+    
+    // Автоматичне відправлення форми при зміні select
+    const sortSelect = document.querySelector('select[name="sort"]');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            this.closest('form').submit();
+        });
+    }
+    
+    // Додаємо обробники подій для галереї
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    console.log('Gallery items found:', galleryItems.length);
+    
+    galleryItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            const modalId = this.getAttribute('data-modal-id');
+            console.log('Gallery item clicked, modal ID:', modalId);
+            openModal(modalId);
+        });
+    });
+});
+
+// Закриття модального вікна при натисканні на Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        console.log('Escape key pressed');
+        const openModals = document.querySelectorAll('.modal[style*="display: flex"]');
+        console.log('Open modals found:', openModals.length);
+        openModals.forEach(modal => {
+            modal.style.display = 'none';
+        });
+        document.body.style.overflow = '';
+    }
+});
+
+// Додаємо глобальні функції для використання в HTML
+window.openModal = openModal;
+window.closeModal = closeModal;
+
+// Закриття модального вікна при натисканні на фон
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal')) {
+        console.log('Modal background clicked');
+        event.target.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+});
+</script>
+{% endblock %}

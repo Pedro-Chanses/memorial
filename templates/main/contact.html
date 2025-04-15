@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-amber-50 min-h-screen py-10">
+    <div class="container mx-auto px-4">
+        <!-- Заголовок -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900">Контакти</h1>
+            <div class="w-24 h-1 bg-amber-700 mx-auto"></div>
+        </div>
+        
+        <!-- Інформаційні картки -->
+        <div class="grid md:grid-cols-3 gap-8 mb-12">
+            <!-- Адреса -->
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center hover:shadow-xl transition duration-300">
+                <div class="text-amber-700 text-4xl mb-4">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Адреса</h3>
+                <p class="text-gray-600">
+                   Волинська область
+                </p>
+            </div>
+            
+            <!-- Телефон -->
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center hover:shadow-xl transition duration-300">
+                <div class="text-amber-700 text-4xl mb-4">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Телефон</h3>
+                <p class="text-gray-600">
+                    +380683323005
+                </p>
+            </div>
+            
+            <!-- Email -->
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center hover:shadow-xl transition duration-300">
+                <div class="text-amber-700 text-4xl mb-4">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Email</h3>
+                <p class="text-gray-600">
+                    memorial@44840@gmail.com
+                </p>
+            </div>
+        </div>
+
+        <!-- Соціальні мережі -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-12">
+            <h2 class="text-2xl font-bold mb-6">Ми в соціальних мережах</h2>
+            
+            <div class="space-y-6">
+                <p class="text-gray-600 mb-6">Підписуйтесь на наші соціальні мережі, щоб бути в курсі новин та акцій.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <a href="https://t.me/dets_stone" target="_blank" class="flex flex-col items-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fab fa-telegram text-5xl text-[#0088cc] mb-3"></i>
+                        <span class="text-lg font-medium">Telegram</span>
+                    </a>
+                    
+                    <a href="https://www.instagram.com/dets_stone" target="_blank" class="flex flex-col items-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fab fa-instagram text-5xl text-[#E1306C] mb-3"></i>
+                        <span class="text-lg font-medium">Instagram</span>
+                    </a>
+                    
+                    <a href="https://www.facebook.com/dets.stone" target="_blank" class="flex flex-col items-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fab fa-facebook text-5xl text-[#1877F2] mb-3"></i>
+                        <span class="text-lg font-medium">Facebook</span>
+                    </a>
+                </div>
+                
+                <div class="mt-8 p-6 bg-gray-50 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4">Зв'яжіться з нами напряму</h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-phone text-2xl text-amber-700 mr-4"></i>
+                            <div>
+                                <p class="font-medium">Телефон:</p>
+                                <p class="text-gray-600">+380683323005</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <i class="fas fa-envelope text-2xl text-amber-700 mr-4"></i>
+                            <div>
+                                <p class="font-medium">Email:</p>
+                                <p class="text-gray-600">memorial@44840@gmail.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Карта -->
+        <div class="rounded-lg overflow-hidden shadow-lg">
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d40156.86006669751!2d24.35692851700545!3d51.01977425663372!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47244327669720af%3A0x85ef2f3173a6acdf!2z0JzQvtCz0LjQu9Cw!5e0!3m2!1suk!2sua!4v1744493442792!5m2!1suk!2sua" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                width="100%" 
+                height="450" 
+                style="border:0;" 
+                allowfullscreen="" 
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Основна інформація -->
+        <div class="col-lg-8">
+            <!-- Заголовок і мета-інформація -->
+            <div class="post-header mb-4">
+                <h1 class="mb-3">{{ post.title }}</h1>
+                <div class="post-meta">
+                    <span class="me-3">
+                        <i class="fas fa-user"></i> {{ post.author.username }}
+                    </span>
+                    <span class="me-3">
+                        <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%d.%m.%Y %H:%M') }}
+                    </span>
+                    <span class="me-3">
+                        <i class="fas fa-map-marker-alt"></i> {{ post.location }}
+                    </span>
+                    <span class="category-badge">{{ post.category.name }}</span>
+                </div>
+            </div>
+
+            <!-- Галерея зображень -->
+            {% if post.images %}
+            <div id="postCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for image in post.images %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        <img src="{{ url_for('static', filename='uploads/' + image.filename) }}"
+                             class="d-block w-100" alt="Фото проекту">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if post.images.count() > 1 %}
+                <button class="carousel-control-prev" type="button" 
+                        data-bs-target="#postCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" 
+                        data-bs-target="#postCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Опис -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Опис проекту</h5>
+                    <p class="card-text">{{ post.body }}</p>
+                </div>
+            </div>
+
+            <!-- Дати -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Терміни</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Початок:</strong></p>
+                            <p>{{ post.start_date.strftime('%d.%m.%Y %H:%M') if post.start_date else 'Не вказано' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Завершення:</strong></p>
+                            <p>{{ post.end_date.strftime('%d.%m.%Y %H:%M') if post.end_date else 'Не вказано' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Контактна інформація -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Контактна інформація</h5>
+                    <p class="card-text">{{ post.contact_info }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Бічна панель -->
+        <div class="col-lg-4">
+            <!-- Кнопки дій -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user == post.author or current_user.is_admin %}
+                            <div class="d-grid gap-2 mb-3">
+                                <a href="{{ url_for('posts.edit', post_id=post.id) }}" 
+                                   class="btn btn-primary">
+                                    <i class="fas fa-edit"></i> Редагувати
+                                </a>
+                                <button class="btn btn-danger" 
+                                        data-confirm="Ви впевнені, що хочете видалити це оголошення?"
+                                        onclick="deletePost({{ post.id }})">
+                                    <i class="fas fa-trash"></i> Видалити
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-primary btn-lg"
+                                        data-bs-toggle="modal" data-bs-target="#applicationModal">
+                                    <i class="fas fa-hand-helping"></i> Хочу допомогти
+                                </button>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center">
+                            <p class="mb-3">Увійдіть, щоб відгукнутися на оголошення</p>
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt"></i> Увійти
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Статистика</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-users text-primary"></i> 
+                            {{ post.applications.count() }} відгуків
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-eye text-primary"></i> 
+                            {{ post.views }} переглядів
+                        </li>
+                        <li>
+                            <i class="fas fa-clock text-primary"></i> 
+                            Створено {{ post.created_at.strftime('%d.%m.%Y') }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Схожі оголошення -->
+            {% if similar_posts %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Схожі оголошення</h5>
+                    {% for similar in similar_posts %}
+                    <div class="mb-3">
+                        <h6 class="mb-1">
+                            <a href="{{ url_for('posts.view', post_id=similar.id) }}" 
+                               class="text-decoration-none">
+                                {{ similar.title }}
+                            </a>
+                        </h6>
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt"></i> {{ similar.location }}
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Модальне вікно подачі заявки -->
+<div class="modal fade" id="applicationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подати заявку</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('posts.apply', post_id=post.id) }}">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.message.label(class="form-label") }}
+                        {{ form.message(class="form-control" + (" is-invalid" if form.message.errors else ""), rows="5") }}
+                        {% for error in form.message.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function deletePost(postId) {
+    if (confirm('Ви впевнені, що хочете видалити це оголошення?')) {
+        fetch(`/posts/${postId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.href = "{{ url_for('main.index') }}";
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

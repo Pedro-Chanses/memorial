@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title">Редагування зображення</h1>
+                    
+                    <!-- Попередній перегляд зображення -->
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='uploads/gallery/' + image.filename) }}"
+                             class="img-fluid rounded" 
+                             alt="{{ image.description or 'Gallery image' }}"
+                             style="max-height: 400px;">
+                    </div>
+                    
+                    <form method="post">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            {{ form.category.label(class="form-label") }}
+                            {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else "")) }}
+                            {% for error in form.category.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="3") }}
+                            {% for error in form.description.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('gallery.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Назад
+                            </a>
+                            <div>
+                                <button type="button" 
+                                        class="btn btn-danger me-2" 
+                                        onclick="deleteImage({{ image.id }})">
+                                    <i class="fas fa-trash"></i> Видалити
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Зберегти
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function deleteImage(imageId) {
+    if (confirm('Ви впевнені, що хочете видалити це зображення?')) {
+        fetch(`/gallery/delete/${imageId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = "{{ url_for('gallery.index') }}";
+            } else {
+                alert('Помилка при видаленні зображення');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Помилка при видаленні зображення');
+        });
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

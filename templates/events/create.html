@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title">{% if event %}Редагування{% else %}Створення{% endif %} події</h1>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                            {% for error in form.title.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="5") }}
+                            {% for error in form.description.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.event_type.label(class="form-label") }}
+                                {{ form.event_type(class="form-select" + (" is-invalid" if form.event_type.errors else "")) }}
+                                {% for error in form.event_type.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.branch_id.label(class="form-label") }}
+                                {{ form.branch_id(class="form-select" + (" is-invalid" if form.branch_id.errors else "")) }}
+                                {% for error in form.branch_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.start_date.label(class="form-label") }}
+                                {{ form.start_date(class="form-control" + (" is-invalid" if form.start_date.errors else ""), type="datetime-local") }}
+                                {% for error in form.start_date.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.end_date.label(class="form-label") }}
+                                {{ form.end_date(class="form-control" + (" is-invalid" if form.end_date.errors else ""), type="datetime-local") }}
+                                {% for error in form.end_date.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.location.label(class="form-label") }}
+                            {{ form.location(class="form-control" + (" is-invalid" if form.location.errors else "")) }}
+                            {% for error in form.location.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.images.label(class="form-label") }}
+                            {{ form.images(class="form-control" + (" is-invalid" if form.images.errors else ""), multiple=true, accept="image/*") }}
+                            {% for error in form.images.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <small class="form-text text-muted">
+                                Можна завантажити декілька зображень. Дозволені формати: jpg, jpeg, png, gif.
+                            </small>
+                        </div>
+                        
+                        {% if event and event.images %}
+                        <div class="mb-3">
+                            <label class="form-label">Поточні зображення</label>
+                            <div class="row g-3">
+                                {% for image in event.images %}
+                                <div class="col-md-4">
+                                    <div class="position-relative">
+                                        <img src="{{ url_for('static', filename='uploads/events/' + image.filename) }}"
+                                             class="img-thumbnail" alt="Event image">
+                                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
+                                                onclick="deleteImage({{ image.id }})">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('events.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Назад
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 
+                                {% if event %}Зберегти зміни{% else %}Створити подію{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if event %}
+<script>
+function deleteImage(imageId) {
+    if (confirm('Ви впевнені, що хочете видалити це зображення?')) {
+        fetch(`/events/image/${imageId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Помилка при видаленні зображення');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Помилка при видаленні зображення');
+        });
+    }
+}
+</script>
+{% endif %}
+{% endblock %}

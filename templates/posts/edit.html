@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Головна</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('posts.view', post_id=post.id) }}">{{ post.title }}</a></li>
+                    <li class="breadcrumb-item active">Редагування</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h1 class="text-center mb-4">Редагувати оголошення</h1>
+                    
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                            {% for error in form.title.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.body.label(class="form-label") }}
+                            {{ form.body(class="form-control" + (" is-invalid" if form.body.errors else ""), rows="5") }}
+                            {% for error in form.body.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.location.label(class="form-label") }}
+                                {{ form.location(class="form-control" + (" is-invalid" if form.location.errors else "")) }}
+                                {% for error in form.location.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.category.label(class="form-label") }}
+                                {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else "")) }}
+                                {% for error in form.category.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.start_date.label(class="form-label") }}
+                                {{ form.start_date(class="form-control" + (" is-invalid" if form.start_date.errors else ""),
+                                                 type="datetime-local") }}
+                                {% for error in form.start_date.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.end_date.label(class="form-label") }}
+                                {{ form.end_date(class="form-control" + (" is-invalid" if form.end_date.errors else ""),
+                                               type="datetime-local") }}
+                                {% for error in form.end_date.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.contact_info.label(class="form-label") }}
+                            {{ form.contact_info(class="form-control" + (" is-invalid" if form.contact_info.errors else "")) }}
+                            {% for error in form.contact_info.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Поточні зображення -->
+                        {% if post.images %}
+                        <div class="mb-4">
+                            <h5>Поточні зображення</h5>
+                            <div class="row g-3">
+                                {% for image in post.images %}
+                                <div class="col-md-4">
+                                    <div class="position-relative">
+                                        <img src="{{ url_for('static', filename='uploads/' + image.filename) }}"
+                                             class="img-fluid rounded"
+                                             alt="Зображення {{ loop.index }}">
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
+                                                onclick="deleteImage({{ image.id }})">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Нові зображення -->
+                        <div class="mb-4">
+                            {{ form.images.label(class="form-label") }}
+                            {{ form.images(class="form-control" + (" is-invalid" if form.images.errors else ""),
+                                         multiple="multiple",
+                                         accept="image/*") }}
+                            {% for error in form.images.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <div id="imagePreview" class="row g-3 mt-2"></div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('posts.view', post_id=post.id) }}" 
+                               class="btn btn-outline-secondary">
+                                Скасувати
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Попередній перегляд нових зображень
+document.getElementById('images').addEventListener('change', function(e) {
+    var preview = document.getElementById('imagePreview');
+    preview.innerHTML = '';
+    
+    for (var i = 0; i < this.files.length; i++) {
+        let file = this.files[i];
+        if (!file.type.startsWith('image/')){ continue }
+        
+        let col = document.createElement('div');
+        col.className = 'col-md-4';
+        
+        let img = document.createElement('img');
+        img.classList.add('img-fluid', 'rounded');
+        img.file = file;
+        
+        let reader = new FileReader();
+        reader.onload = (function(aImg) { 
+            return function(e) { 
+                aImg.src = e.target.result; 
+            }; 
+        })(img);
+        
+        reader.readAsDataURL(file);
+        col.appendChild(img);
+        preview.appendChild(col);
+    }
+});
+
+// Видалення зображення
+function deleteImage(imageId) {
+    if (confirm('Ви впевнені, що хочете видалити це зображення?')) {
+        fetch(`/posts/image/${imageId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

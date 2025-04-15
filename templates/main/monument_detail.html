@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .monument-image-main {
+        width: 100%;
+        height: 400px;
+        object-fit: contain;
+        background-color: #f8f8f8;
+        transition: transform 0.5s ease;
+    }
+    
+    .monument-image-main:hover {
+        transform: scale(1.5);
+    }
+    
+    .monument-image-thumbnail {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .monument-image-thumbnail.active {
+        border-color: var(--primary-color);
+    }
+    
+    .monument-image-thumbnail:hover {
+        transform: scale(1.05);
+    }
+    
+    .similar-monument-card {
+        background-color: white;
+        border-radius: 0.375rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .similar-monument-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .similar-monument-card > a {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .similar-monument-image {
+        width: 100%;
+        height: 180px;
+        object-fit: contain;
+        background-color: #f9f9f9;
+        padding: 8px;
+        transition: transform 0.5s ease;
+    }
+    
+    .similar-monument-card:hover .similar-monument-image {
+        transform: scale(1.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Навігаційні хлібні крихти -->
+<div class="bg-gray-100 py-3">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center text-sm text-gray-600">
+            <a href="{{ url_for('main.index') }}" class="hover:text-primary-color">Головна</a>
+            <span class="mx-2">/</span>
+            <a href="{{ url_for('main.catalog') }}" class="hover:text-primary-color">Каталог</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-800">{{ monument.name }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Основна інформація про пам'ятник -->
+<section class="py-12 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Галерея зображень -->
+            <div>
+                <div class="mb-4">
+                    <img id="mainImage" src="{{ monument.main_image }}" alt="{{ monument.name }}" class="monument-image-main rounded-lg">
+                </div>
+                
+                {% if monument.images.count() > 1 %}
+                <div class="flex space-x-2 overflow-x-auto pb-2">
+                    {% for image in monument.images %}
+                    <img src="{{ image.filename }}" 
+                         alt="{{ monument.name }}" 
+                         class="monument-image-thumbnail rounded {% if image.is_main %}active{% endif %}"
+                         onclick="changeMainImage('{{ image.filename }}', this)">
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Інформація про пам'ятник -->
+            <div>
+                <div class="flex items-center mb-2">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 mr-2">
+                        Артикул: {{ monument.article }}
+                    </span>
+                    
+                    {% if monument.is_new %}
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 mr-2">
+                        Новинка
+                    </span>
+                    {% endif %}
+                    
+                    {% if monument.is_popular %}
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800 mr-2">
+                        Популярний
+                    </span>
+                    {% endif %}
+                    
+                    {% if monument.is_featured %}
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 mr-2">
+                        Рекомендуємо
+                    </span>
+                    {% endif %}
+                </div>
+                <h1 class="text-3xl font-bold mb-4">{{ monument.name }}</h1>
+                
+                <div class="mb-6">
+                    {% if monument.discount_percent and monument.old_price %}
+                    <div class="flex items-center">
+                        <p class="text-2xl font-bold text-primary-color">{{ monument.formatted_price }}</p>
+                        <p class="text-lg text-gray-500 line-through ml-3">{{ monument.formatted_old_price }}</p>
+                        <span class="ml-3 px-2 py-1 bg-red-500 text-white text-sm font-semibold rounded">
+                            -{{ monument.discount_percent }}%
+                        </span>
+                    </div>
+                    {% else %}
+                    <p class="text-2xl font-bold text-primary-color">{{ monument.formatted_price }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-6">
+                    {% if monument.description %}
+                    <p class="text-gray-700">{{ monument.description }}</p>
+                    {% else %}
+                    <p class="text-gray-500 italic">Опис відсутній</p>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Характеристики:</h3>
+                    <ul class="space-y-2">
+                        {% if monument.dimensions %}
+                        <li class="flex">
+                            <span class="w-32 text-gray-600">Розміри:</span>
+                            <span class="font-medium">{{ monument.dimensions }}</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if monument.material %}
+                        <li class="flex">
+                            <span class="w-32 text-gray-600">Матеріал:</span>
+                            <span class="font-medium">{{ monument.material }}</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if monument.color %}
+                        <li class="flex">
+                            <span class="w-32 text-gray-600">Колір:</span>
+                            <span class="font-medium">{{ monument.color }}</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if monument.weight %}
+                        <li class="flex">
+                            <span class="w-32 text-gray-600">Вага:</span>
+                            <span class="font-medium">{{ monument.weight }} кг</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if monument.style %}
+                        <li class="flex">
+                            <span class="w-32 text-gray-600">Стиль:</span>
+                            <span class="font-medium">{{ monument.style }}</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if monument.category %}
+                        <li class="flex">
+                            <span class="w-32 text-gray-600">Категорія:</span>
+                            <span class="font-medium">
+                                {% set category_names = {
+                                    '/odinarni-kombinovani': 'Одинарні комбіновані',
+                                    '/odinarni-prosti': 'Одинарні прості',
+                                    '/dityachi-pamyatniki': 'Дитячі пам\'ятники',
+                                    '/evropeyski-pamyatniki': 'Європейські пам\'ятники',
+                                    '/pamyatniki-dlya-viyskovikh': 'Пам\'ятники для військових',
+                                    '/podviyni-pamyatniki': 'Подвійні пам\'ятники',
+                                    '/suputni-tovari': 'Аксесуари',
+                                    '/khresti': 'Хрести'
+                                } %}
+                                {{ category_names.get(monument.category, monument.category) }}
+                            </span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if monument.availability %}
+                        <li class="flex">
+                            <span class="w-32 text-gray-600">Наявність:</span>
+                            <span class="font-medium">{{ monument.availability }}</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if monument.production_time %}
+                        <li class="flex">
+                            <span class="w-32 text-gray-600">Час виготовлення:</span>
+                            <span class="font-medium">{{ monument.production_time }}</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if monument.warranty %}
+                        <li class="flex">
+                            <span class="w-32 text-gray-600">Гарантія:</span>
+                            <span class="font-medium">{{ monument.warranty }}</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% if monument.installation_included %}
+                        <li class="flex">
+                            <span class="w-32 text-gray-600">Установка:</span>
+                            <span class="font-medium text-green-600">Включена в ціну</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                {% if monument.delivery_info %}
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Інформація про доставку:</h3>
+                    <p class="text-gray-700">{{ monument.delivery_info }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="{{ url_for('main.contact') }}" class="primary-button font-bold py-3 px-8 rounded-md transition hover:shadow-lg text-center">
+                        Замовити консультацію
+                    </a>
+                    <a href="tel:+380 68 332 3005" class="secondary-button font-bold py-3 px-8 rounded-md transition hover:shadow-lg text-center flex items-center justify-center">
+                        <i class="fas fa-phone-alt mr-2"></i> Зателефонувати
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Схожі пам'ятники -->
+{% if similar_monuments %}
+<section class="py-12 bg-gray-100">
+    <div class="container mx-auto px-4">
+        <h2 class="text-2xl font-bold mb-8">Схожі пам'ятники</h2>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {% for similar in similar_monuments %}
+            <div class="similar-monument-card overflow-hidden">
+                <a href="{{ url_for('main.monument_detail', monument_id=similar.id) }}">
+                    <div class="relative">
+                        {% if similar.main_image %}
+                        <img src="{{ similar.main_image }}" alt="{{ similar.name }}" class="similar-monument-image">
+                        {% else %}
+                        <div class="similar-monument-image bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                        </div>
+                        {% endif %}
+                        
+                        {% if similar.is_new %}
+                        <span class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow-sm">Новинка</span>
+                        {% endif %}
+                        
+                        {% if similar.discount_percent and similar.old_price %}
+                        <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-sm">-{{ similar.discount_percent }}%</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="text-lg font-semibold text-gray-800 hover:text-primary-color mb-2 line-clamp-2">{{ similar.name }}</h3>
+                        
+                        <div class="flex items-center mb-2">
+                            <span class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">{{ similar.article }}</span>
+                            {% if similar.is_featured %}
+                            <span class="text-sm text-white bg-primary-color rounded px-2 py-1 ml-2">Рекомендуємо</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-auto">
+                            {% if similar.discount_percent and similar.old_price %}
+                            <div class="flex items-center mb-2">
+                                <span class="text-xl font-bold text-gray-800">{{ similar.formatted_price }}</span>
+                                <span class="text-sm text-gray-500 line-through ml-2">{{ similar.formatted_old_price }}</span>
+                            </div>
+                            {% else %}
+                            <div class="mb-2">
+                                <span class="text-xl font-bold text-gray-800">{{ similar.formatted_price }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="text-sm text-gray-600">{{ similar.availability }}</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Пов'язані товари -->
+{% if monument.related_products and related_products %}
+<section class="py-12 bg-white">
+    <div class="container mx-auto px-4">
+        <h2 class="text-2xl font-bold mb-8">Аксесуари</h2>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {% for related_id in monument.related_products %}
+            {% set related = related_products.get(related_id) %}
+            {% if related %}
+            <div class="similar-monument-card overflow-hidden">
+                <a href="{{ url_for('main.monument_detail', monument_id=related.id) }}">
+                    <div class="relative">
+                        {% if related.main_image %}
+                        <img src="{{ related.main_image }}" alt="{{ related.name }}" class="similar-monument-image">
+                        {% else %}
+                        <div class="similar-monument-image bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                        </div>
+                        {% endif %}
+                        
+                        {% if related.category == '/suputni-tovari' %}
+                        <span class="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-sm">Супутній товар</span>
+                        {% endif %}
+                        
+                        {% if related.discount_percent and related.old_price %}
+                        <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-sm">-{{ related.discount_percent }}%</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="text-lg font-semibold text-gray-800 hover:text-primary-color mb-2 line-clamp-2">{{ related.name }}</h3>
+                        
+                        <div class="flex items-center mb-2">
+                            <span class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">{{ related.article }}</span>
+                            {% if related.is_featured %}
+                            <span class="text-sm text-white bg-primary-color rounded px-2 py-1 ml-2">Рекомендуємо</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-auto">
+                            {% if related.discount_percent and related.old_price %}
+                            <div class="flex items-center mb-2">
+                                <span class="text-xl font-bold text-gray-800">{{ related.formatted_price }}</span>
+                                <span class="text-sm text-gray-500 line-through ml-2">{{ related.formatted_old_price }}</span>
+                            </div>
+                            {% else %}
+                            <div class="mb-2">
+                                <span class="text-xl font-bold text-gray-800">{{ related.formatted_price }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="text-sm text-gray-600">{{ related.availability }}</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function changeMainImage(src, thumbnail) {
+        document.getElementById('mainImage').src = src;
+        
+        // Видаляємо клас active з усіх мініатюр
+        document.querySelectorAll('.monument-image-thumbnail').forEach(function(thumb) {
+            thumb.classList.remove('active');
+        });
+        
+        // Додаємо клас active до обраної мініатюри
+        thumbnail.classList.add('active');
+    }
+</script>
+{% endblock %}

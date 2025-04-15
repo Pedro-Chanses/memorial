@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ title }} DETS STONE</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #B45309;
+            --secondary-color: #92400E;
+            --accent-color: #D97706;
+            --text-color: #1F2937;
+            --light-color: #F9FAFB;
+            --dark-color: #111827;
+            --border-color: #E5E7EB;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            scroll-behavior: smooth;
+            background-color: var(--light-color);
+            color: var(--text-color);
+        }
+        
+        .dets-stone-logo {
+            font-family: 'Georgia', serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            text-align: center;
+            background-image: linear-gradient(135deg, #2d2d2d 0%, #5a5a5a 30%, #2d2d2d 60%, #3d3d3d 100%);
+            background-size: 100%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -moz-background-clip: text;
+            -webkit-text-fill-color: transparent; 
+            -moz-text-fill-color: transparent;
+            text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.8),
+                         0px -1px 1px rgba(255, 255, 255, 0.4),
+                         1px 1px 1px rgba(0, 0, 0, 0.5);
+            position: relative;
+            display: inline-block;
+            padding: 0.1em 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            filter: drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.3));
+        }
+        
+        .dets-stone-logo.large {
+            font-size: 5rem;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            padding: 0.5em 0;
+        }
+        
+        .dets-stone-logo::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></svg>');
+            opacity: 0.3;
+            mix-blend-mode: overlay;
+            pointer-events: none;
+        }
+        
+        .dets-stone-logo::after {
+            content: 'НАТУРАЛЬНИЙ КАМІНЬ';
+            position: absolute;
+            bottom: -1.5em;
+            right: 0;
+            font-size: 0.5rem;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            color: #374151;
+            text-shadow: none;
+            -webkit-text-fill-color: #374151;
+            -moz-text-fill-color: #374151;
+        }
+        
+        .dets-stone-logo.footer-logo {
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 50%, #e5e5e5 100%);
+            -webkit-text-fill-color: transparent;
+            -moz-text-fill-color: transparent;
+            text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.8),
+                         0px -1px 1px rgba(0, 0, 0, 0.4),
+                         1px 1px 1px rgba(0, 0, 0, 0.5);
+            filter: drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.5));
+        }
+        
+        .dets-stone-logo.footer-logo::after {
+            color: #f5f7fa;
+            -webkit-text-fill-color: #f5f7fa;
+            -moz-text-fill-color: #f5f7fa;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .monument-card {
+            background-color: white;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .monument-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .monument-image {
+            width: 100%;
+            height: 220px;
+            object-fit: contain;
+            background-color: #f9f9f9;
+            padding: 8px;
+            transition: transform 0.5s ease;
+        }
+        
+        .monument-card:hover .monument-image {
+            transform: scale(1.5);
+        }
+        
+        .monument-info {
+            padding: 1.5rem;
+        }
+        
+        .news-card {
+            background-color: white;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .testimonial-card {
+            background-color: white;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .primary-button {
+            background-color: var(--primary-color);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .primary-button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .secondary-button {
+            background-color: #4B5563;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .secondary-button:hover {
+            background-color: #374151;
+        }
+
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{{ url_for('static', filename='img/hero-bg-1.webp') }}');
+            background-size: cover;
+            background-position: center;
+            min-height: 80vh;
+        }
+        
+        /* Стилі для нового випадаючого меню */
+        .dropdown-wrapper {
+          position: relative;
+          display: inline-block;
+        }
+
+        .dropdown-toggle {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+        }
+
+        .dropdown-menu {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          width: 260px;
+          background-color: white;
+          border: 1px solid #E5E7EB;
+          border-radius: 0.375rem;
+          box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+          opacity: 0;
+          pointer-events: none;
+          transform: translateY(10px);
+          transition: all 0.2s ease-in-out;
+          z-index: 1000;
+        }
+
+        .dropdown-wrapper:hover .dropdown-menu {
+          opacity: 1;
+          pointer-events: auto;
+          transform: translateY(0);
+        }
+
+        .dropdown-menu a {
+          display: block;
+          padding: 0.5rem 1rem;
+          color: #374151;
+          transition: 0.2s;
+          text-decoration: none;
+        }
+
+        .dropdown-menu a:hover {
+          background-color: #F3F4F6;
+          color: var(--primary-color);
+        }
+        
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+        
+        .product-card {
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-amber-50 shadow-sm py-3">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+            <a href="{{ url_for('main.index') }}" class="flex items-center space-x-2 mb-2 md:mb-0">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Логотип" class="h-16 w-auto">
+                <div class="flex flex-col">
+                    <span class="dets-stone-logo text-2xl" style="transform: perspective(500px) rotateX(10deg) scale(1.05); text-transform: uppercase;">Dets Stone</span>
+                </div>
+            </a>
+            
+            <div class="flex items-center justify-center md:flex-grow md:justify-end space-x-6">
+                <div class="flex items-center">
+                    <i class="fas fa-phone-alt text-primary-color mr-2"></i>
+                    <span class="text-lg font-medium text-gray-700">+380 68 332 3005</span>
+                </div>
+                
+                <a href="{{ url_for('main.contact') }}" class="primary-button py-2 px-4 rounded-md hover:shadow-lg inline-block">
+                    Контакти
+                </a>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <!-- Mobile Menu Button -->
+            <div class="flex justify-between items-center py-3 md:hidden">
+                <button id="mobileMenuButton" class="text-gray-700 hover:text-primary-color focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="hidden md:flex justify-center space-x-8 py-3">
+                <a href="{{ url_for('main.index') }}" class="text-gray-700 hover:text-primary-color transition font-medium">Головна</a>
+                
+                <!-- Dropdown Menu -->
+                <div class="dropdown-wrapper">
+                  <div class="dropdown-toggle text-gray-700 hover:text-primary-color font-medium">
+                    Каталог пам'ятників <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                  </div>
+                  <div class="dropdown-menu">
+                    <a href="{{ url_for('main.monuments_category', category='odinarni-kombinovani') }}">Одинарні комбіновані</a>
+                    <a href="{{ url_for('main.monuments_category', category='odinarni-prosti') }}">Одинарні прості</a>
+                    <a href="{{ url_for('main.monuments_category', category='dityachi-pamyatniki') }}">Дитячі пам'ятники</a>
+                    <a href="{{ url_for('main.monuments_category', category='pamyatniki-dlya-viyskovikh') }}">Пам'ятники для військових</a>
+                    <a href="{{ url_for('main.monuments_category', category='podviyni-pamyatniki') }}">Подвійні пам'ятники</a>
+                    <a href="{{ url_for('main.monuments_category', category='suputni-tovari') }}">Аксесуари</a>
+                    <hr class="my-1 border-gray-200">
+                    <a href="{{ url_for('main.monuments') }}" class="font-medium">Всі пам'ятники</a>
+                  </div>
+                </div>
+                
+                <a href="{{ url_for('news.index') }}" class="text-gray-700 hover:text-primary-color transition font-medium">Статті</a>
+                <a href="{{ url_for('main.contact') }}" class="text-gray-700 hover:text-primary-color transition font-medium">Контакти</a>
+                
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin.index') }}" class="text-gray-700 hover:text-primary-color transition font-medium">
+                        <i class="fas fa-cog"></i> Адмін панель
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.profile') }}" class="text-gray-700 hover:text-primary-color transition font-medium flex items-center">
+                        {% if current_user.avatar_url %}
+                        <img src="{{ current_user.avatar_url }}" alt="{{ current_user.name }}" class="w-6 h-6 rounded-full mr-2">
+                        {% else %}
+                        <i class="fas fa-user mr-2"></i>
+                        {% endif %}
+                        {{ current_user.name }}
+                    </a>
+                    <form action="{{ url_for('auth.logout') }}" method="GET" class="inline">
+                        <button type="submit" class="text-gray-700 hover:text-primary-color transition font-medium">
+                            <i class="fas fa-sign-out-alt"></i> Вихід
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="text-gray-700 hover:text-primary-color transition font-medium">
+                        <i class="fas fa-sign-in-alt mr-1"></i> Вхід
+                    </a>
+                    <a href="{{ url_for('auth.register') }}" class="text-gray-700 hover:text-primary-color transition font-medium">
+                        <i class="fas fa-user-plus mr-1"></i> Реєстрація
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden" id="mobileMenu">
+            <div class="px-4 py-3 space-y-4 border-t border-gray-200 bg-white">
+                <div class="flex justify-center mb-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-phone-alt text-primary-color mr-2"></i>
+                        <span class="text-lg font-medium text-gray-700">+380 68 332 3005</span>
+                    </div>
+                </div>
+                
+                <a href="{{ url_for('main.index') }}" class="block text-gray-700 hover:text-primary-color transition">Головна</a>
+                
+                <!-- Mobile Dropdown -->
+                <div class="py-2">
+                    <button class="w-full flex justify-between items-center text-gray-700 hover:text-primary-color transition focus:outline-none" id="mobileCatalogBtn">
+                        <span>Каталог</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <div class="hidden pl-4 mt-2 space-y-2" id="mobileCatalogMenu">
+                        <a href="{{ url_for('main.monuments_category', category='odinarni-kombinovani') }}" class="block text-gray-700 hover:text-primary-color">Одинарні комбіновані</a>
+                        <a href="{{ url_for('main.monuments_category', category='odinarni-prosti') }}" class="block text-gray-700 hover:text-primary-color">Одинарні прості</a>
+                        <a href="{{ url_for('main.monuments_category', category='dityachi-pamyatniki') }}" class="block text-gray-700 hover:text-primary-color">Дитячі пам'ятники</a>
+                        <a href="{{ url_for('main.monuments_category', category='pamyatniki-dlya-viyskovikh') }}" class="block text-gray-700 hover:text-primary-color">Пам'ятники для військових</a>
+                        <a href="{{ url_for('main.monuments_category', category='podviyni-pamyatniki') }}" class="block text-gray-700 hover:text-primary-color">Подвійні пам'ятники</a>
+                        <a href="{{ url_for('main.monuments_category', category='suputni-tovari') }}" class="block text-gray-700 hover:text-primary-color">Аксесуари</a>
+                        <a href="{{ url_for('main.monuments') }}" class="block text-gray-700 hover:text-primary-color font-medium mt-2">Всі пам'ятники</a>
+                    </div>
+                </div>
+                
+                <a href="{{ url_for('news.index') }}" class="block text-gray-700 hover:text-primary-color transition">Статті</a>
+                <a href="{{ url_for('main.contact') }}" class="block text-gray-700 hover:text-primary-color transition">Контакти</a>
+                
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin.index') }}" class="block hover:text-sky-400 transition">
+                        <i class="fas fa-cog"></i> Адмін панель
+                    </a>
+                    <a href="{{ url_for('news.create') }}" class="block hover:text-sky-400 transition">
+                        <i class="fas fa-plus"></i> Додати новину
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.profile') }}" class="block hover:text-sky-400 transition">
+                        <i class="fas fa-user"></i> {{ current_user.name }}
+                    </a>
+                    <form action="{{ url_for('auth.logout') }}" method="GET">
+                        <button type="submit" class="block w-full text-left hover:text-sky-400 transition">
+                            <i class="fas fa-sign-out-alt"></i> Вихід
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="block hover:text-sky-400 transition">
+                        <i class="fas fa-sign-in-alt"></i> Вхід
+                    </a>
+                    <a href="{{ url_for('auth.register') }}" class="block hover:text-sky-400 transition">
+                        <i class="fas fa-user-plus"></i> Реєстрація
+                    </a>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <button class="blue-button w-full text-white font-medium py-2 px-4 rounded-md hover:shadow-lg">
+                        Зворотний дзвінок
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mx-auto px-4 mt-4">
+                {% for category, message in messages %}
+                    <div class="p-4 mb-4 rounded-lg border {% if category == 'error' or category == 'danger' %}border-red-500 bg-white text-red-500{% elif category == 'success' %}border-green-500 bg-white text-green-500{% else %}border-primary-color bg-white text-primary-color{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <div class="mb-4">
+                        <div class="flex items-center space-x-4">
+                            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Логотип" class="h-14 w-auto brightness-150 filter">
+                            <span class="dets-stone-logo footer-logo text-2xl" style="text-transform: uppercase; display: inline-block; margin-top: 0;">Dets Stone</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-300">
+                        Виготовлення пам'ятників з натурального каменю за індивідуальними замовленнями. Висока якість, доступні ціни, швидке виконання.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-white">Контакти</h3>
+                    <div class="space-y-2 text-gray-300">
+                        <p><i class="fas fa-phone-alt mr-2 text-primary-color"></i> +380 68 332 3005</p>
+                        <p><i class="fas fa-envelope mr-2 text-primary-color"></i> memorial@44840@gmail.com</p>
+                        <p><i class="fas fa-map-marker-alt mr-2 text-primary-color"></i>Волинська область</p>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 Пам'ятники з натурального каменю. Всі права захищені.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Callback Button -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <a href="tel:+380683323005" class="primary-button rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:shadow-xl">
+            <i class="fas fa-phone text-xl"></i>
+        </a>
+    </div>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        // Функція для ініціалізації всіх обробників подій
+        document.addEventListener('DOMContentLoaded', function() {
+            // Кнопка мобільного меню
+            var mobileMenuButton = document.getElementById('mobileMenuButton');
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', function() {
+                    document.getElementById('mobileMenu').classList.toggle('hidden');
+                });
+            }
+            
+            // Мобільне меню категорій
+            var mobileCatalogBtn = document.getElementById('mobileCatalogBtn');
+            if (mobileCatalogBtn) {
+                mobileCatalogBtn.addEventListener('click', function(e) {
+                    e.preventDefault(); // Запобігаємо стандартній дії посилання
+                    document.getElementById('mobileCatalogMenu').classList.toggle('hidden');
+                });
+            }
+            
+            console.log('Mobile menu handlers initialized');
+        });
+        
+        // Видаляємо весь JavaScript для випадаючого меню, щоб використовувати тільки CSS
+    </script>
+    
+    <!-- Scripts -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

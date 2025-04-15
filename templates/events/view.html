@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Заголовок та кнопки управління -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1>{{ event.title }}</h1>
+            <p class="text-muted">
+                {% if event.event_type == 'competition' %}
+                <i class="fas fa-trophy"></i> Змагання
+                {% elif event.event_type == 'seminar' %}
+                <i class="fas fa-chalkboard-teacher"></i> Семінар
+                {% elif event.event_type == 'training' %}
+                <i class="fas fa-dumbbell"></i> Тренування
+                {% elif event.event_type == 'exam' %}
+                <i class="fas fa-graduation-cap"></i> Атестація
+                {% else %}
+                <i class="fas fa-calendar-alt"></i> Інше
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            {% if current_user.is_authenticated %}
+                {% if current_user.is_admin or current_user.id == event.organizer_id %}
+                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Редагувати
+                </a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="fas fa-trash"></i> Видалити
+                </button>
+                {% endif %}
+                {% if not user_registered and event.start_date > now %}
+                <a href="{{ url_for('events.register', event_id=event.id) }}" class="btn btn-success">
+                    <i class="fas fa-user-plus"></i> Зареєструватися
+                </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Основна інформація -->
+        <div class="col-md-8">
+            <!-- Галерея зображень -->
+            {% if event.images.count() > 0 %}
+            <div id="eventCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for image in event.images %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        <img src="{{ url_for('static', filename='uploads/events/' + image.filename) }}"
+                             class="d-block w-100 rounded" alt="{{ event.title }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if event.images.count() > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#eventCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Попереднє</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#eventCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Наступне</span>
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Опис події -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Опис події</h5>
+                    {{ event.description | safe }}
+                </div>
+            </div>
+
+            <!-- Учасники -->
+            {% if event.participants.count() > 0 %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Учасники</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Учасник</th>
+                                    <th>Категорія</th>
+                                    <th>Статус</th>
+                                    {% if current_user.is_admin or current_user.id == event.organizer_id %}
+                                    <th>Дії</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participant in event.participants %}
+                                <tr>
+                                    <td>{{ participant.user.name }}</td>
+                                    <td>{{ participant.category }}</td>
+                                    <td>
+                                        {% if participant.status == 'registered' %}
+                                        <span class="badge bg-info">Зареєстрований</span>
+                                        {% elif participant.status == 'confirmed' %}
+                                        <span class="badge bg-success">Підтверджено</span>
+                                        {% elif participant.status == 'cancelled' %}
+                                        <span class="badge bg-danger">Скасовано</span>
+                                        {% endif %}
+                                    </td>
+                                    {% if current_user.is_admin or current_user.id == event.organizer_id %}
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-success btn-sm">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Бічна панель -->
+        <div class="col-md-4">
+            <!-- Інформація про подію -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Деталі події</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-calendar"></i> <strong>Початок:</strong><br>
+                            {{ event.start_date.strftime('%d.%m.%Y %H:%M') }}
+                        </li>
+                        {% if event.end_date %}
+                        <li class="mb-2">
+                            <i class="fas fa-calendar-check"></i> <strong>Завершення:</strong><br>
+                            {{ event.end_date.strftime('%d.%m.%Y %H:%M') }}
+                        </li>
+                        {% endif %}
+                        <li class="mb-2">
+                            <i class="fas fa-map-marker-alt"></i> <strong>Місце проведення:</strong><br>
+                            {{ event.location }}
+                        </li>
+                        {% if event.branch %}
+                        <li class="mb-2">
+                            <i class="fas fa-dojo"></i> <strong>Філія:</strong><br>
+                            {{ event.branch.name }}
+                        </li>
+                        {% endif %}
+                        <li>
+                            <i class="fas fa-user"></i> <strong>Організатор:</strong><br>
+                            {{ event.organizer.name }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Статистика</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-users"></i> Учасників: {{ event.participants.count() }}
+                        </li>
+                        {% if event.start_date > now %}
+                        <li>
+                            <i class="fas fa-clock"></i> До початку: {{ ((event.start_date - now).days)|abs }} днів
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальне вікно видалення -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Підтвердження видалення</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Ви впевнені, що хочете видалити цю подію? Це дія незворотна.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                <form action="{{ url_for('events.delete', event_id=event.id) }}" method="post" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">Видалити</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

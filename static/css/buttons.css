@@ -1,0 +1,214 @@
+/* Неонові кнопки */
+.neon-button-container {
+    display: flex;
+    gap: 3rem;
+    justify-content: center;
+    align-items: center;
+    margin: 2rem 0;
+    padding: 2rem;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%);
+    border-radius: 20px;
+}
+
+.neon-button {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    text-decoration: none;
+    color: #fff;
+    transition: all 0.3s ease;
+    padding: 1rem;
+    transform: perspective(1000px) rotateX(15deg);
+    transform-style: preserve-3d;
+}
+
+.neon-button-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s ease;
+    background: #2a2a2a;
+    box-shadow: 
+        /* Внутрішні тіні для об'єму */
+        inset -8px -8px 12px rgba(255, 255, 255, 0.1),
+        inset 8px 8px 12px rgba(0, 0, 0, 0.4),
+        /* Зовнішні тіні для об'єму */
+        -6px -6px 16px rgba(255, 255, 255, 0.1),
+        8px 8px 16px rgba(0, 0, 0, 0.4),
+        /* Тінь знизу для ефекту підняття */
+        0 15px 25px rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transform: translateZ(30px);
+}
+
+.neon-button-circle::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.2) 0%, 
+        rgba(255, 255, 255, 0.05) 50%, 
+        transparent 100%);
+    pointer-events: none;
+}
+
+.neon-button-circle::after {
+    content: '';
+    position: absolute;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.05) 50%, 
+        rgba(255, 255, 255, 0.1) 100%);
+    pointer-events: none;
+    transform: translateY(5%);
+}
+
+.neon-button-icon {
+    font-size: 3rem;
+    color: #fff;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    z-index: 1;
+}
+
+.neon-button-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.neon-button-pill {
+    padding: 0.6rem 2.5rem;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+    box-shadow: 
+        inset -2px -2px 6px rgba(255, 255, 255, 0.1),
+        inset 2px 2px 6px rgba(0, 0, 0, 0.3),
+        -2px -2px 8px rgba(255, 255, 255, 0.1),
+        2px 2px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: perspective(500px) rotateX(10deg);
+}
+
+/* Join button styles */
+.neon-button.join .neon-button-circle {
+    background: linear-gradient(145deg, #1e90ff 0%, #0066cc 100%);
+}
+
+.neon-button.join:hover .neon-button-circle {
+    box-shadow: 
+        inset -8px -8px 12px rgba(255, 255, 255, 0.2),
+        inset 8px 8px 12px rgba(0, 0, 0, 0.4),
+        -6px -6px 16px rgba(255, 255, 255, 0.1),
+        8px 8px 16px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(30, 144, 255, 0.6);
+    transform: perspective(500px) rotateX(5deg) translateY(-5px);
+}
+
+.neon-button.join .neon-button-pill {
+    background: linear-gradient(145deg, #1e90ff 0%, #0066cc 100%);
+    color: white;
+}
+
+/* Support button styles */
+.neon-button.support .neon-button-circle {
+    background: linear-gradient(145deg, #00bfff 0%, #0099cc 100%);
+}
+
+.neon-button.support:hover .neon-button-circle {
+    box-shadow: 
+        inset -8px -8px 12px rgba(255, 255, 255, 0.2),
+        inset 8px 8px 12px rgba(0, 0, 0, 0.4),
+        -6px -6px 16px rgba(255, 255, 255, 0.1),
+        8px 8px 16px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(0, 191, 255, 0.6);
+    transform: perspective(500px) rotateX(5deg) translateY(-5px);
+}
+
+.neon-button.support .neon-button-pill {
+    background: linear-gradient(145deg, #00bfff 0%, #0099cc 100%);
+    color: white;
+}
+
+/* Help button styles */
+.neon-button.help .neon-button-circle {
+    background: linear-gradient(145deg, #ffd700 0%, #ccac00 100%);
+}
+
+.neon-button.help:hover .neon-button-circle {
+    box-shadow: 
+        inset -8px -8px 12px rgba(255, 255, 255, 0.2),
+        inset 8px 8px 12px rgba(0, 0, 0, 0.4),
+        -6px -6px 16px rgba(255, 255, 255, 0.1),
+        8px 8px 16px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(255, 215, 0, 0.6);
+    transform: perspective(500px) rotateX(5deg) translateY(-5px);
+}
+
+.neon-button.help .neon-button-pill {
+    background: linear-gradient(145deg, #ffd700 0%, #ccac00 100%);
+    color: white;
+}
+
+/* Hover effects */
+.neon-button:hover {
+    transform: perspective(1000px) rotateX(10deg);
+}
+
+.neon-button:hover .neon-button-icon {
+    transform: scale(1.1);
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+}
+
+.neon-button:hover .neon-button-text {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.neon-button:hover .neon-button-circle {
+    transform: translateZ(40px);
+}
+
+.neon-button:hover .neon-button-pill {
+    transform: perspective(500px) rotateX(5deg) translateY(-2px);
+    box-shadow: 
+        inset -2px -2px 6px rgba(255, 255, 255, 0.2),
+        inset 2px 2px 6px rgba(0, 0, 0, 0.4),
+        -2px -2px 8px rgba(255, 255, 255, 0.1),
+        2px 2px 8px rgba(0, 0, 0, 0.3),
+        0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .neon-button-container {
+        flex-direction: column;
+        gap: 4rem;
+    }
+    
+    .neon-button-circle {
+        width: 140px;
+        height: 140px;
+    }
+    
+    .neon-button {
+        transform: perspective(1000px) rotateX(12deg);
+    }
+}

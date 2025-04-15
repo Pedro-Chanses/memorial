@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Галерея</h1>
+        {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_coach) %}
+        <a href="{{ url_for('gallery.upload') }}" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Завантажити зображення
+        </a>
+        {% endif %}
+    </div>
+
+
+    <!-- Галерея -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 gallery-grid">
+        {% for image in images.items %}
+        <div class="col">
+            <div class="card h-100">
+                <a href="{{ image.filename }}" 
+                   data-fancybox="gallery"
+                   data-caption="{{ image.description or '' }}">
+                    <img src="{{ image.thumbnail }}"
+                         class="card-img-top gallery-img" 
+                         alt="{{ image.description or 'Gallery image' }}"
+                         loading="lazy">
+                </a>
+                {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_coach) %}
+                <div class="card-body">
+                    <div class="btn-group w-100">
+                        <a href="{{ url_for('gallery.edit', image_id=image.id) }}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit"></i> Редагувати
+                        </a>
+                        <button type="button" 
+                                class="btn btn-outline-danger btn-sm"
+                                onclick="deleteImage({{ image.id }})">
+                            <i class="fas fa-trash"></i> Видалити
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                У галереї поки немає зображень.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Пагінація -->
+    {% if images.pages > 1 %}
+    <nav aria-label="Gallery pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for page in images.iter_pages() %}
+            {% if page %}
+            <li class="page-item {% if page == images.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('gallery.index', page=page, category=current_category) }}">
+                    {{ page }}
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css"/>
+
+<script>
+Fancybox.bind("[data-fancybox]", {
+    // Опції для fancybox
+});
+
+function deleteImage(imageId) {
+    if (confirm('Ви впевнені, що хочете видалити це зображення?')) {
+        fetch(`/gallery/delete/${imageId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Помилка при видаленні зображення');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Помилка при видаленні зображення');
+        });
+    }
+}
+</script>
+
+<style>
+.gallery-grid .card {
+    transition: transform 0.2s;
+}
+
+.gallery-grid .card:hover {
+    transform: translateY(-5px);
+}
+
+.gallery-img {
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+</style>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-amber-50 min-h-screen py-16">
+    <div class="container mx-auto px-4">
+        <!-- Заголовок -->
+        <div class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900">Вхід до системи</h1>
+            <div class="w-24 h-1 bg-amber-700 mx-auto"></div>
+        </div>
+        
+        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="p-8">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-6">
+                        {{ form.email.label(class="block text-gray-700 font-bold mb-2") }}
+                        {{ form.email(class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700" + (" border-amber-700" if form.email.errors else "")) }}
+                        {% for error in form.email.errors %}
+                        <p class="text-amber-700 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-6">
+                        {{ form.password.label(class="block text-gray-700 font-bold mb-2") }}
+                        {{ form.password(class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700" + (" border-amber-700" if form.password.errors else "")) }}
+                        {% for error in form.password.errors %}
+                        <p class="text-amber-700 text-sm mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-6 flex items-center">
+                        {{ form.remember(class="h-4 w-4 text-amber-700 focus:ring-amber-700 border-gray-300 rounded") }}
+                        {{ form.remember.label(class="ml-2 block text-gray-700") }}
+                    </div>
+                    
+                    <div class="space-y-4">
+                        {{ form.submit(class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 px-4 rounded-lg transition duration-300") }}
+                        
+                        <a href="{{ url_for('auth.authorize') }}" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center">
+                            <i class="fab fa-google mr-2"></i>Увійти через Google
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="py-4 bg-amber-50 text-center border-t">
+                <p class="text-gray-600">Немає облікового запису? <a href="{{ url_for('auth.register') }}" class="text-amber-700 hover:text-amber-900 font-medium">Зареєструватися</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

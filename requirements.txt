@@ -1,0 +1,61 @@
+# Flask та його розширення
+Flask==3.0.2
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-Migrate==4.0.5
+Flask-Mail==0.9.1
+Flask-WTF==1.2.1
+Flask-Limiter==3.5.0
+Flask-Babel==4.0.0
+
+# База даних
+SQLAlchemy==2.0.25
+psycopg2-binary==2.9.9
+click==8.1.7
+flask-migrate==4.0.5
+alembic==1.13.1
+
+# Обробка зображень та хмарне сховище
+Pillow==10.2.0
+cloudinary==1.37.0
+
+# Форми та валідація
+WTForms==3.1.2
+email-validator==2.1.0.post1
+
+# Безпека
+Werkzeug==3.0.1
+pyjwt==2.8.0
+
+# Кешування та ліміти запитів
+# redis==5.0.1 # Використовуємо вбудоване кешування замість Redis
+limits==3.9.0
+
+# Середовище та конфігурація
+python-dotenv==1.0.1
+
+# OAuth та інтеграції
+requests==2.31.0
+oauthlib==3.2.2
+requests-oauthlib==1.3.1
+google-auth-oauthlib==1.0.0
+google-auth==2.22.0
+google-api-python-client==2.97.0
+
+# Веб-сервер для продакшена
+gunicorn==21.2.0
+
+# Утиліти для роботи з датами та часом
+pytz==2024.1
+
+# Для статичних файлів
+whitenoise==6.6.0
+
+# Для роботи з Excel
+pandas==2.2.3
+openpyxl==3.1.5
+xlrd==2.0.1
+numpy==2.2.4
+python-dateutil==2.9.0.post0
+et-xmlfile==2.0.0
+tzdata==2025.2

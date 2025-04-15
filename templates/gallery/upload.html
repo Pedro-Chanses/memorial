@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+.preview-card {
+    transition: transform 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.preview-card:hover {
+    transform: translateY(-5px);
+}
+
+.preview-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 4px 4px 0 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title">Завантаження зображень</h1>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            {{ form.images.label(class="form-label") }}
+                            {{ form.images(class="form-control" + (" is-invalid" if form.images.errors else ""), multiple=true, accept="image/*") }}
+                            {% for error in form.images.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <small class="form-text text-muted">
+                                Можна завантажити декілька зображень. Дозволені формати: jpg, jpeg, png, gif, webp.
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.category.label(class="form-label") }}
+                            {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else "")) }}
+                            {% for error in form.category.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="3") }}
+                            {% for error in form.description.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <small class="form-text text-muted">
+                                Опис буде застосовано до всіх завантажених зображень
+                            </small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('gallery.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Назад
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Завантажити
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Попередній перегляд зображень
+document.getElementById('images').addEventListener('change', function(e) {
+    const preview = document.createElement('div');
+    preview.className = 'row g-3 mt-3';
+    preview.id = 'imagePreview';
+    
+    // Видаляємо попередній перегляд, якщо він існує
+    const oldPreview = document.getElementById('imagePreview');
+    if (oldPreview) oldPreview.remove();
+    
+    // Створюємо попередній перегляд для кожного файлу
+    for (const file of this.files) {
+        const reader = new FileReader();
+        const col = document.createElement('div');
+        col.className = 'col-md-4';
+        
+        reader.onload = function(e) {
+            col.innerHTML = `
+                <div class="card preview-card">
+                    <img src="${e.target.result}" class="card-img-top preview-image" alt="Preview">
+                    <div class="card-body p-2">
+                        <p class="card-text small text-muted mb-0">${file.name}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        reader.readAsDataURL(file);
+        preview.appendChild(col);
+    }
+    
+    // Додаємо попередній перегляд після поля для завантаження
+    const uploadField = document.getElementById('images');
+    const previewContainer = document.createElement('div');
+    previewContainer.className = 'mt-3';
+    previewContainer.appendChild(preview);
+    uploadField.parentElement.appendChild(previewContainer);
+});
+</script>
+{% endblock %}

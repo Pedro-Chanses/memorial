@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-10">
+    <div class="container mx-auto px-4">
+        <!-- Заголовок та метадані -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+            <div class="md:grid md:grid-cols-12 md:gap-8">
+                <!-- Зображення статті (на десктопі зліва) -->
+                {% if news.image_url %}
+                <div class="md:col-span-5 lg:col-span-4">
+                    <div class="relative h-full">
+                        <div class="relative aspect-[4/3] md:aspect-auto md:h-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                            <img src="{{ news.image_url|replace('http:', 'https:') }}" 
+                                 alt="{{ news.title }}" 
+                                 class="max-w-full max-h-full w-auto h-auto object-contain"
+                                 loading="lazy"
+                                 onload="this.style.opacity='1'"
+                                 onerror="this.style.display='none'"
+                            >
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Контент (на десктопі справа) -->
+                <div class="{% if news.image_url %}md:col-span-7 lg:col-span-8{% else %}col-span-12{% endif %} p-6 md:p-8">
+                    <!-- Заголовок та кнопки управління -->
+                    <div class="flex flex-col md:flex-row justify-between items-start mb-6">
+                        <div>
+                            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{{ news.title }}</h1>
+                            
+                            <!-- Метадані -->
+                            <div class="flex flex-wrap items-center text-sm text-gray-500 gap-4">
+                                <span class="inline-flex items-center">
+                                    <i class="far fa-calendar-alt mr-2"></i> {{ news.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                </span>
+                                
+                                {% if news.updated_at and news.updated_at != news.created_at %}
+                                <span class="inline-flex items-center">
+                                    <i class="fas fa-edit mr-2"></i> Оновлено: {{ news.updated_at.strftime('%d.%m.%Y %H:%M') }}
+                                </span>
+                                {% endif %}
+                                
+                                {% if news.author %}
+                                <span class="inline-flex items-center">
+                                    <i class="fas fa-user mr-2"></i> {{ news.author.name }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if current_user.is_authenticated and current_user.is_admin %}
+                        <div class="flex mt-4 md:mt-0 space-x-3">
+                            <a href="{{ url_for('admin.edit_news', news_id=news.id) }}" 
+                               class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                <i class="fas fa-edit mr-2"></i> Редагувати
+                            </a>
+                            <button data-news-id="{{ news.id }}"
+                                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                <i class="fas fa-trash-alt mr-2"></i> Видалити
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Зміст статті -->
+                    {% if news.summary %}
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-md">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-info-circle text-blue-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-blue-700">{{ news.summary }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="prose prose-lg max-w-none news-content">
+                        {% if '<' in news.content and '>' in news.content %}
+                            {{ news.content | safe }}
+                        {% else %}
+                            {% for paragraph in news.content.split('\n\n') %}
+                                <p>{{ paragraph | replace('\n', '<br>') | safe }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+
+                </div>
+            </div>
+        </div>
+        
+        <!-- Навігація -->
+        <div class="mt-8 flex justify-between items-center">
+            <a href="{{ url_for('news.index') }}" 
+               class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i> До списку статей
+            </a>
+            
+            <!-- Поділитися -->
+            <div class="flex space-x-2">
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank" rel="noopener" 
+                   class="inline-flex items-center p-2 border border-transparent rounded-full text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://t.me/share/url?url={{ request.url }}&text={{ news.title }}" target="_blank" rel="noopener" 
+                   class="inline-flex items-center p-2 border border-transparent rounded-full text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <i class="fab fa-telegram-plane"></i>
+                </a>
+                <a href="viber://forward?text={{ news.title }} {{ request.url }}" 
+                   class="inline-flex items-center p-2 border border-transparent rounded-full text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
+                    <i class="fab fa-viber"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Додаємо обробники кліку для кнопок видалення
+    document.querySelectorAll('button[data-news-id]').forEach(button => {
+        button.addEventListener('click', function() {
+            const newsId = this.dataset.newsId;
+            if (confirm('Ви впевнені, що хочете видалити цю новину?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/news/delete/${newsId}`;
+
+                // Додаємо CSRF токен
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = '{{ csrf_token() }}';
+                form.appendChild(csrfInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    });
+});
+
+
+</script>
+
+<style>
+.news-content {
+    line-height: 1.6;
+    font-size: 1.1rem;
+}
+
+.news-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 1.5rem 0;
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.news-content h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #1F2937;
+}
+
+.news-content h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-top: 1.75rem;
+    margin-bottom: 1rem;
+    color: #1F2937;
+}
+
+.news-content h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: #1F2937;
+}
+
+.news-content h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+    color: #1F2937;
+}
+
+.news-content h5,
+.news-content h6 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    color: #1F2937;
+}
+
+.news-content p {
+    margin-bottom: 1.25rem;
+    line-height: 1.7;
+}
+
+.news-content ul,
+.news-content ol {
+    margin-bottom: 1.25rem;
+    padding-left: 2.5rem;
+}
+
+.news-content ul li,
+.news-content ol li {
+    margin-bottom: 0.5rem;
+}
+
+.news-content blockquote {
+    border-left: 4px solid #B45309;
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: #4B5563;
+}
+
+.news-content pre {
+    background-color: #F3F4F6;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+}
+
+.news-content code {
+    background-color: #F3F4F6;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-family: monospace;
+}
+
+.news-content a {
+    color: #B45309;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.news-content a:hover {
+    color: #92400E;
+}
+
+.news-content hr {
+    margin: 2rem 0;
+    border: 0;
+    border-top: 1px solid #E5E7EB;
+}
+
+.news-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+.news-content th,
+.news-content td {
+    border: 1px solid #E5E7EB;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.news-content th {
+    background-color: #F9FAFB;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+{% endblock %}

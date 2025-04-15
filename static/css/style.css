@@ -1,0 +1,308 @@
+/* Змінні з кольорами */
+:root {
+    --primary-red: #E31E24;
+    --primary-black: #1A1A1A;
+    --primary-yellow: #FFD700;
+    --white: #FFFFFF;
+    --gray-light: #F5F5F5;
+    --gray-dark: #333333;
+}
+
+/* Загальні стилі */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Roboto', sans-serif;
+    color: var(--gray-dark);
+    line-height: 1.6;
+    background-color: var(--white);
+}
+
+main {
+    flex: 1;
+}
+
+/* Навігація */
+.navbar {
+    background-color: var(--white);
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    color: var(--primary-black);
+}
+
+.navbar-brand img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.nav-link {
+    font-weight: 500;
+    color: var(--primary-black);
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--primary-red);
+}
+
+/* Картки */
+.card {
+    border: none;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,.1);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,.15);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 1.5rem;
+    background-color: var(--white);
+}
+
+/* Кнопки */
+.btn {
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-red);
+    border-color: var(--primary-red);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background-color: darken(var(--primary-red), 10%);
+    border-color: darken(var(--primary-red), 10%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(227, 30, 36, 0.4);
+}
+
+/* Форми */
+.form-control {
+    border-radius: 20px;
+    padding: 0.75rem 1.25rem;
+    border: 2px solid var(--gray-light);
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(227, 30, 36, 0.25);
+    border-color: var(--primary-red);
+}
+
+/* Галерея */
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.3s ease-in-out;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.05);
+}
+
+.gallery-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: var(--white);
+}
+
+/* Статистика */
+.stats-card {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--white);
+    border-radius: 15px;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,.1);
+}
+
+.stats-card i {
+    font-size: 2.5rem;
+    color: var(--primary-red);
+    margin-bottom: 1rem;
+}
+
+.stats-card h3 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-black);
+}
+
+/* Футер */
+footer {
+    background-color: var(--primary-black);
+    padding: 3rem 0;
+    margin-top: auto;
+    color: var(--white);
+}
+
+footer h5 {
+    color: var(--primary-yellow);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+footer ul li {
+    margin-bottom: 0.5rem;
+}
+
+footer a {
+    color: var(--white);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+footer a:hover {
+    color: var(--primary-yellow);
+}
+
+/* Лого клубу */
+.club-logo {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--primary-red), var(--primary-yellow));
+    padding: 3px;
+}
+
+.club-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+    background-color: var(--white);
+}
+
+/* Круглі іконки (як на Instagram) */
+.story-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(45deg, var(--primary-red), var(--primary-yellow));
+    margin: 0 10px;
+    cursor: pointer;
+}
+
+.story-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--white);
+}
+
+.story-title {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 5px;
+    color: var(--gray-dark);
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .card-img-top {
+        height: 150px;
+    }
+    
+    .gallery-item img {
+        height: 200px;
+    }
+    
+    .story-circle {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* Dropdown меню */
+.dropdown-menu {
+    z-index: 1000;
+}
+
+.dropdown-menu .dropdown-item {
+    cursor: pointer;
+    position: relative;
+    z-index: 1001;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: var(--white);
+}
+
+.dropdown-menu .dropdown-item,
+.dropdown-menu .dropdown-item:active,
+.dropdown-menu .dropdown-item:focus {
+    pointer-events: auto !important;
+}
+
+/* Анімації */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Ефекти наведення для карток */
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Обмеження тексту */
+.text-truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

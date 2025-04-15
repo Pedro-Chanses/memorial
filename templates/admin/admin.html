@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Адміністрування бази даних</h2>
+    
+    <!-- Список таблиць -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Таблиці бази даних</h4>
+        </div>
+        <div class="card-body">
+            <div class="list-group">
+                {% for table in tables %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ table }}</h5>
+                        <div>
+                            <a href="{{ url_for('admin.table_data', table_name=table) }}" class="btn btn-primary btn-sm">Дані</a>
+                            <a href="{{ url_for('admin.table_structure', table_name=table) }}" class="btn btn-info btn-sm ms-2">Структура</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- SQL запит -->
+    <div class="card">
+        <div class="card-header">
+            <h4>Виконати SQL запит</h4>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('admin.execute_sql') }}" method="POST">
+                <div class="form-group">
+                    <textarea name="query" class="form-control" rows="4" placeholder="Введіть SQL запит..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Виконати</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Повідомлення про результат -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} mt-3">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+{% endblock %}

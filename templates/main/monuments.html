@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col md:flex-row justify-between items-start mb-6">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">Каталог пам'ятників</h1>
+            <p class="text-gray-600">Знайдіть ідеальний пам'ятник для вшанування пам'яті близької людини</p>
+        </div>
+        
+        <!-- Пошук -->
+        <div class="w-full md:w-auto mt-4 md:mt-0">
+            <form action="{{ url_for('main.monuments') }}" method="GET" class="flex">
+                <input type="text" name="q" value="{{ search_query or '' }}" placeholder="Пошук за назвою" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                <button type="submit" class="bg-primary-color hover:bg-secondary-color text-white px-4 py-2 rounded-r-md">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Фільтри та сортування -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
+        <div class="mb-4 md:mb-0">
+            <span class="text-gray-700">Знайдено: <strong>{{ monuments.total }}</strong> пам'ятників</span>
+        </div>
+        
+        <div class="flex flex-wrap gap-2">
+            <span class="text-gray-700 self-center mr-2">Сортувати за:</span>
+            <a href="{{ url_for('main.monuments', sort='display_order', q=search_query) }}" 
+                class="px-3 py-1 rounded-full text-sm {% if sort == 'display_order' %}bg-primary-color text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                Популярністю
+            </a>
+            <a href="{{ url_for('main.monuments', sort='price_asc', q=search_query) }}" 
+                class="px-3 py-1 rounded-full text-sm {% if sort == 'price_asc' %}bg-primary-color text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                Ціна: від дешевих
+            </a>
+            <a href="{{ url_for('main.monuments', sort='price_desc', q=search_query) }}" 
+                class="px-3 py-1 rounded-full text-sm {% if sort == 'price_desc' %}bg-primary-color text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                Ціна: від дорогих
+            </a>
+            <a href="{{ url_for('main.monuments', sort='newest', q=search_query) }}" 
+                class="px-3 py-1 rounded-full text-sm {% if sort == 'newest' %}bg-primary-color text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                Новинки
+            </a>
+            <a href="{{ url_for('main.monuments', sort='popular', q=search_query) }}" 
+                class="px-3 py-1 rounded-full text-sm {% if sort == 'popular' %}bg-primary-color text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                Популярні
+            </a>
+        </div>
+    </div>
+    
+    {% if search_query %}
+    <div class="mb-6 bg-blue-50 p-4 rounded-lg">
+        <p class="text-blue-800">
+            Результати пошуку для: <strong>"{{ search_query }}"</strong>
+            <a href="{{ url_for('main.monuments') }}" class="ml-2 text-blue-600 hover:text-blue-800">
+                <i class="fas fa-times-circle"></i> Скинути
+            </a>
+        </p>
+    </div>
+    {% endif %}
+    
+    <!-- Список пам'ятників -->
+    {% if monuments.items %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for monument in monuments.items %}
+        <div class="monument-card overflow-hidden">
+            <a href="{{ url_for('main.monument_detail', monument_id=monument.id) }}" class="block">
+                {% if monument.images.first() %}
+                <img src="{{ monument.images.first().filename }}" alt="{{ monument.name }}" class="monument-image">
+                {% else %}
+                <div class="monument-image bg-gray-200 flex items-center justify-center">
+                    <span class="text-gray-400"><i class="fas fa-image fa-2x"></i></span>
+                </div>
+                {% endif %}
+                
+                <div class="monument-info">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-semibold text-gray-800 hover:text-primary-color">{{ monument.name }}</h3>
+                        {% if monument.is_new %}
+                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded">Новинка</span>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 mb-2">Артикул: {{ monument.article }}</p>
+                    
+                    {% if monument.has_discount %}
+                    <div class="flex items-center mb-2">
+                        <span class="text-xl font-bold text-gray-800">{{ monument.formatted_price }}</span>
+                        <span class="text-sm text-gray-500 line-through ml-2">{{ monument.formatted_old_price }}</span>
+                        <span class="text-sm text-white bg-red-500 rounded px-1 ml-2">-{{ monument.discount_percent }}%</span>
+                    </div>
+                    {% else %}
+                    <div class="mb-2">
+                        <span class="text-xl font-bold text-gray-800">{{ monument.formatted_price }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">{{ monument.category_name }}</span>
+                        <span class="text-sm text-gray-600">{{ monument.availability }}</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Пагінація -->
+    <div class="mt-8 flex justify-center">
+        <nav class="inline-flex rounded-md shadow">
+            {% if monuments.has_prev %}
+            <a href="{{ url_for('main.monuments', page=monuments.prev_num, sort=sort, q=search_query) }}" 
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+                <i class="fas fa-chevron-left"></i> Попередня
+            </a>
+            {% else %}
+            <span class="px-4 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-l-md cursor-not-allowed">
+                <i class="fas fa-chevron-left"></i> Попередня
+            </span>
+            {% endif %}
+            
+            <span class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300">
+                Сторінка {{ monuments.page }} з {{ monuments.pages }}
+            </span>
+            
+            {% if monuments.has_next %}
+            <a href="{{ url_for('main.monuments', page=monuments.next_num, sort=sort, q=search_query) }}" 
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+                Наступна <i class="fas fa-chevron-right"></i>
+            </a>
+            {% else %}
+            <span class="px-4 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-r-md cursor-not-allowed">
+                Наступна <i class="fas fa-chevron-right"></i>
+            </span>
+            {% endif %}
+        </nav>
+    </div>
+    {% else %}
+    <div class="bg-white p-8 rounded-lg shadow-sm text-center">
+        <i class="fas fa-search text-gray-400 text-5xl mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Пам'ятники не знайдено</h3>
+        <p class="text-gray-600 mb-4">
+            {% if search_query %}
+            На жаль, за вашим запитом "{{ search_query }}" нічого не знайдено.
+            {% else %}
+            На жаль, у цій категорії поки немає пам'ятників.
+            {% endif %}
+        </p>
+        <a href="{{ url_for('main.monuments') }}" class="inline-block px-4 py-2 bg-primary-color hover:bg-secondary-color text-white rounded-md">
+            Переглянути всі пам'ятники
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

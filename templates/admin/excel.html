@@ -1,0 +1,242 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Імпорт/Експорт пам'ятників</h1>
+        <a href="{{ url_for('admin.monuments') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+            <i class="fas fa-arrow-left mr-2"></i> Назад до списку
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Експорт -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+            <h2 class="text-xl font-bold mb-4">Експорт пам'ятників</h2>
+            <p class="mb-4 text-gray-600">Завантажте всі пам'ятники у форматі Excel для редагування.</p>
+            
+            <div class="mt-6">
+                <button id="exportBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                    <i class="fas fa-file-export mr-2"></i> Експортувати в Excel
+                </button>
+            </div>
+            
+            <!-- Індикатор прогресу -->
+            <div id="exportProgress" class="mt-4 hidden">
+                <div class="w-full bg-gray-200 rounded-full h-4">
+                    <div id="progressBar" class="bg-green-600 h-4 rounded-full text-center text-xs text-white leading-4" style="width: 0%">0%</div>
+                </div>
+                <p id="exportStatus" class="mt-2 text-sm text-gray-600">Підготовка до експорту...</p>
+            </div>
+            
+            <div class="mt-4 text-sm text-gray-500">
+                <p><i class="fas fa-info-circle mr-1"></i> Експортований файл буде містити всі пам'ятники з бази даних.</p>
+                <p class="mt-2"><i class="fas fa-lightbulb mr-1"></i> Ви можете редагувати дані в Excel і потім імпортувати їх назад.</p>
+            </div>
+        </div>
+        
+        <!-- Імпорт -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+            <h2 class="text-xl font-bold mb-4">Імпорт пам'ятників</h2>
+            <p class="mb-4 text-gray-600">Завантажте Excel файл з пам'ятниками для імпорту в базу даних.</p>
+            
+            <form id="importForm" action="{{ url_for('excel.import_monuments') }}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="mb-4">
+                    <label for="excel_file" class="block text-sm font-medium text-gray-700 mb-1">Виберіть Excel файл</label>
+                    <input type="file" name="excel_file" id="excel_file" accept=".xlsx, .xls" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <div class="mt-6">
+                    <button id="importBtn" type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                        <i class="fas fa-file-import mr-2"></i> Імпортувати з Excel
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Індикатор прогресу імпорту -->
+            <div id="importProgress" class="mt-4 hidden">
+                <div class="w-full bg-gray-200 rounded-full h-4">
+                    <div id="importProgressBar" class="bg-blue-600 h-4 rounded-full text-center text-xs text-white leading-4" style="width: 0%">0%</div>
+                </div>
+                <p id="importStatus" class="mt-2 text-sm text-gray-600">Підготовка до імпорту...</p>
+            </div>
+            
+            <div class="mt-4 text-sm text-gray-500">
+                <p><i class="fas fa-info-circle mr-1"></i> Підтримуються файли формату .xlsx та .xls.</p>
+                <p class="mt-2"><i class="fas fa-exclamation-triangle mr-1 text-yellow-600"></i> Пам'ятники з існуючими артикулами будуть оновлені.</p>
+                <p class="mt-2"><i class="fas fa-lightbulb mr-1"></i> Для правильного імпорту, спочатку експортуйте дані, щоб отримати правильний формат.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Інструкція -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden p-6 mt-6">
+        <h2 class="text-xl font-bold mb-4">Інструкція з імпорту/експорту</h2>
+        
+        <div class="mb-4">
+            <h3 class="text-lg font-semibold mb-2">Формат Excel файлу</h3>
+            <p class="text-gray-600">Excel файл повинен містити наступні стовпці:</p>
+            
+            <div class="mt-3 overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Назва стовпця</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Опис</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Обов'язковий</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">article</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Артикул пам'ятника (унікальний)</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Так</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">name</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Назва пам'ятника</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Так</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">price</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Ціна (грн)</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Ні</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">category</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Категорія (URL-префікс)</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Ні</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4">
+                <p class="text-sm text-gray-600"><i class="fas fa-info-circle mr-1"></i> Повний список полів можна побачити в експортованому файлі.</p>
+                <p class="mt-2 text-sm text-gray-600"><i class="fas fa-exclamation-triangle mr-1 text-yellow-600"></i> Артикул повинен відповідати формату категорії:</p>
+                <ul class="mt-1 ml-6 list-disc text-sm text-gray-600">
+                    <li>Одинарні комбіновані: <span class="font-mono">OK + ID</span> (наприклад, OK123)</li>
+                    <li>Одинарні прості: <span class="font-mono">OP + ID</span> (наприклад, OP456)</li>
+                    <li>Дитячі пам'ятники: <span class="font-mono">DP + ID</span> (наприклад, DP789)</li>
+                    <li>Європейські пам'ятники: <span class="font-mono">EP + ID</span> (наприклад, EP101)</li>
+                    <li>Пам'ятники для військових: <span class="font-mono">PV + ID</span> (наприклад, PV202)</li>
+                    <li>Подвійні пам'ятники: <span class="font-mono">PP + ID</span> (наприклад, PP303)</li>
+                    <li>Аксесуари: <span class="font-mono">ST + ID</span> (наприклад, ST404)</li>
+                    <li>Хрести: <span class="font-mono">XR + ID</span> (наприклад, XR505)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript для індикатора прогресу -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Код для експорту
+        const exportBtn = document.getElementById('exportBtn');
+        const exportProgress = document.getElementById('exportProgress');
+        const progressBar = document.getElementById('progressBar');
+        const exportStatus = document.getElementById('exportStatus');
+        
+        exportBtn.addEventListener('click', function() {
+            // Показуємо індикатор прогресу
+            exportProgress.classList.remove('hidden');
+            exportBtn.disabled = true;
+            exportBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Імітуємо прогрес експорту
+            let progress = 0;
+            const statuses = [
+                'Підготовка до експорту...',
+                'Отримання даних пам\'ятників...',
+                'Формування Excel файлу...',
+                'Додавання зображень...',
+                'Завершальне форматування...',
+                'Завершення експорту...'
+            ];
+            
+            let statusIndex = 0;
+            const progressInterval = setInterval(function() {
+                progress += 5;
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    progress = 100;
+                    // Переходимо на сторінку експорту
+                    window.location.href = '{{ url_for("excel.export_monuments") }}';
+                    return;
+                }
+                
+                // Оновлюємо прогрес-бар
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = progress + '%';
+                
+                // Оновлюємо статус
+                if (progress % 20 === 0 && statusIndex < statuses.length - 1) {
+                    statusIndex++;
+                    exportStatus.textContent = statuses[statusIndex];
+                }
+            }, 200); // Оновлюємо кожні 200 мс
+        });
+        
+        // Код для імпорту
+        const importForm = document.getElementById('importForm');
+        const importBtn = document.getElementById('importBtn');
+        const importProgress = document.getElementById('importProgress');
+        const importProgressBar = document.getElementById('importProgressBar');
+        const importStatus = document.getElementById('importStatus');
+        
+        importForm.addEventListener('submit', function(e) {
+            // Перевіряємо, чи вибрано файл
+            const fileInput = document.getElementById('excel_file');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                return; // Не показуємо прогрес, якщо файл не вибрано
+            }
+            
+            // Показуємо індикатор прогресу
+            importProgress.classList.remove('hidden');
+            importBtn.disabled = true;
+            importBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Імітуємо прогрес імпорту
+            let progress = 0;
+            const statuses = [
+                'Підготовка до імпорту...',
+                'Завантаження файлу...',
+                'Читання даних з Excel...',
+                'Обробка даних...',
+                'Оновлення бази даних...',
+                'Завершення імпорту...'
+            ];
+            
+            let statusIndex = 0;
+            importStatus.textContent = statuses[statusIndex];
+            
+            // Запускаємо анімацію прогресу
+            const progressInterval = setInterval(function() {
+                // Збільшуємо прогрес повільніше, ніж при експорті
+                progress += 3;
+                if (progress >= 95) {
+                    clearInterval(progressInterval);
+                    progress = 95; // Залишаємо 95%, щоб показати, що ще не завершено
+                }
+                
+                // Оновлюємо прогрес-бар
+                importProgressBar.style.width = progress + '%';
+                importProgressBar.textContent = progress + '%';
+                
+                // Оновлюємо статус
+                if (progress % 15 === 0 && statusIndex < statuses.length - 1) {
+                    statusIndex++;
+                    importStatus.textContent = statuses[statusIndex];
+                }
+            }, 300); // Оновлюємо кожні 300 мс
+            
+            // Зберігаємо інтервал в localStorage, щоб можна було його очистити після перезавантаження
+            localStorage.setItem('importProgressInterval', progressInterval);
+        });
+    });
+</script>
+{% endblock %}

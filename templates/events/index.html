@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Події</h1>
+        {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_coach) %}
+        <a href="{{ url_for('events.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Створити подію
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Фільтри -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="type" class="form-label">Тип події</label>
+                    <select name="type" id="type" class="form-select">
+                        <option value="">Всі типи</option>
+                        <option value="competition" {% if current_type == 'competition' %}selected{% endif %}>Змагання</option>
+                        <option value="seminar" {% if current_type == 'seminar' %}selected{% endif %}>Семінар</option>
+                        <option value="training" {% if current_type == 'training' %}selected{% endif %}>Тренування</option>
+                        <option value="exam" {% if current_type == 'exam' %}selected{% endif %}>Атестація</option>
+                        <option value="other" {% if current_type == 'other' %}selected{% endif %}>Інше</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="branch" class="form-label">Філія</label>
+                    <select name="branch" id="branch" class="form-select">
+                        <option value="">Всі філії</option>
+                        {% for branch in branches %}
+                        <option value="{{ branch.id }}" {% if current_branch == branch.id %}selected{% endif %}>
+                            {{ branch.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Фільтрувати
+                    </button>
+                    {% if current_type or current_branch %}
+                    <a href="{{ url_for('events.index') }}" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-times"></i> Скинути
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Список подій -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for event in events.items %}
+        <div class="col">
+            <div class="card h-100">
+                {% if event.images.first() %}
+                <img src="{{ url_for('static', filename='uploads/events/' + event.images.first().filename) }}"
+                     class="card-img-top" alt="{{ event.title }}">
+                {% else %}
+                <img src="{{ url_for('static', filename='img/event-placeholder.jpg') }}"
+                     class="card-img-top" alt="Placeholder">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.title }}</h5>
+                    <p class="card-text text-muted">
+                        <i class="fas fa-calendar"></i> {{ event.start_date.strftime('%d.%m.%Y %H:%M') }}
+                        {% if event.end_date %}
+                        - {{ event.end_date.strftime('%d.%m.%Y %H:%M') }}
+                        {% endif %}
+                    </p>
+                    <p class="card-text">
+                        <i class="fas fa-map-marker-alt"></i> {{ event.location }}
+                    </p>
+                    {% if event.branch %}
+                    <p class="card-text">
+                        <i class="fas fa-dojo"></i> {{ event.branch.name }}
+                    </p>
+                    {% endif %}
+                    <a href="{{ url_for('events.view', event_id=event.id) }}" class="btn btn-primary">
+                        Детальніше
+                    </a>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        {% if event.event_type == 'competition' %}
+                        <i class="fas fa-trophy"></i> Змагання
+                        {% elif event.event_type == 'seminar' %}
+                        <i class="fas fa-chalkboard-teacher"></i> Семінар
+                        {% elif event.event_type == 'training' %}
+                        <i class="fas fa-dumbbell"></i> Тренування
+                        {% elif event.event_type == 'exam' %}
+                        <i class="fas fa-graduation-cap"></i> Атестація
+                        {% else %}
+                        <i class="fas fa-calendar-alt"></i> Інше
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                Наразі немає жодної події.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Пагінація -->
+    {% if events.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for page in events.iter_pages() %}
+            {% if page %}
+            <li class="page-item {% if page == events.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('events.index', page=page, type=current_type, branch=current_branch) }}">
+                    {{ page }}
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

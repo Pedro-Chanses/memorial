@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title">{% if news %}Редагування{% else %}Створення{% endif %} статті</h1>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                            {% for error in form.title.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.category.label(class="form-label") }}
+                            {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else "")) }}
+                            {% for error in form.category.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.summary.label(class="form-label") }}
+                            {{ form.summary(class="form-control" + (" is-invalid" if form.summary.errors else ""), rows="3") }}
+                            {% for error in form.summary.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <small class="form-text text-muted">
+                                Короткий опис, який буде відображатися в списку Статей
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.content.label(class="form-label") }}
+                            {{ form.content(class="form-control" + (" is-invalid" if form.content.errors else ""), rows="10", id="editor") }}
+                            {% for error in form.content.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.images.label(class="form-label") }}
+                            {{ form.images(class="form-control" + (" is-invalid" if form.images.errors else ""), multiple=true, accept="image/*") }}
+                            {% for error in form.images.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <small class="form-text text-muted">
+                                Можна завантажити декілька зображень. Дозволені формати: jpg, jpeg, png, gif, webp.
+                            </small>
+                        </div>
+                        
+                        {% if news and news.images %}
+                        <div class="mb-3">
+                            <label class="form-label">Поточні зображення</label>
+                            <div class="row g-3">
+                                {% for image in news.images %}
+                                <div class="col-md-4">
+                                    <div class="position-relative">
+                                        <img src="{{ url_for('static', filename='uploads/news/' + image.thumbnail) }}"
+                                             class="img-thumbnail" alt="News image">
+                                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 delete-image-btn"
+                                                data-image-id="{{ image.id }}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            {{ form.is_published.label(class="form-label") }}
+                            {{ form.is_published(class="form-select" + (" is-invalid" if form.is_published.errors else "")) }}
+                            {% for error in form.is_published.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('news.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Назад
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 
+                                {% if news %}Зберегти зміни{% else %}Створити статтю{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<!-- TinyMCE -->
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+tinymce.init({
+    selector: '#editor',
+    plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+    language: 'uk',
+    height: 500
+});
+
+// Попередній перегляд нових зображень
+document.getElementById('images').addEventListener('change', function(e) {
+    const preview = document.createElement('div');
+    preview.className = 'row g-3 mt-3';
+    preview.id = 'imagePreview';
+    
+    // Видаляємо попередній перегляд, якщо він існує
+    const oldPreview = document.getElementById('imagePreview');
+    if (oldPreview) oldPreview.remove();
+    
+    // Створюємо попередній перегляд для кожного файлу
+    for (const file of this.files) {
+        const reader = new FileReader();
+        const col = document.createElement('div');
+        col.className = 'col-md-4';
+        
+        reader.onload = function(e) {
+            col.innerHTML = `
+                <div class="card">
+                    <img src="${e.target.result}" class="card-img-top" alt="Preview" style="aspect-ratio: 4/3; object-fit: cover;">
+                    <div class="card-body">
+                        <p class="card-text small text-muted">${file.name}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        reader.readAsDataURL(file);
+        preview.appendChild(col);
+    }
+    
+    this.parentElement.appendChild(preview);
+});
+
+// Функція для видалення зображення
+function deleteImage(imageId) {
+    if (confirm('Ви впевнені, що хочете видалити це зображення?')) {
+        fetch(`/news/image/delete/${imageId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Помилка при видаленні зображення');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Помилка при видаленні зображення');
+        });
+    }
+}
+
+// Додаємо обробники подій для кнопок видалення зображень, якщо вони існують
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.delete-image-btn');
+    if (deleteButtons.length > 0) {
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const imageId = this.getAttribute('data-image-id');
+                deleteImage(imageId);
+            });
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Довідка по артикулах пам'ятників</h1>
+        <a href="{{ url_for('admin.monuments') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+            <i class="fas fa-arrow-left mr-2"></i> Назад до списку пам'ятників
+        </a>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+        <div class="mb-6">
+            <p class="text-gray-700 mb-4">
+                Кожен пам'ятник має унікальний артикул, який складається з префіксу (2 літери) та номера. 
+                Префікс вказує на категорію пам'ятника, а номер є унікальним ідентифікатором в межах цієї категорії.
+            </p>
+            <p class="text-gray-700 mb-4">
+                Наприклад, артикул <strong>OP123</strong> означає "Одинарний простий пам'ятник, номер 123".
+            </p>
+        </div>
+
+        <h2 class="text-xl font-bold mb-4">Префікси артикулів за категоріями:</h2>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Префікс</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Опис</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Категорія</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">OK</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Одинарні комбіновані пам'ятники</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">/odinarni-kombinovani</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">OP</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Одинарні прості пам'ятники</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">/odinarni-prosti</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">DP</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Дитячі пам'ятники</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">/dityachi-pamyatniki</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">EP</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Європейські пам'ятники</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">/evropeyski-pamyatniki</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">PV</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Пам'ятники для військових</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">/pamyatniki-dlya-viyskovikh</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">PP</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Подвійні пам'ятники</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">/podviyni-pamyatniki</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">ST</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Аксесуари</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">/suputni-tovari</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">XR</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Хрести</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">/khresti</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">ZG</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Загальна категорія</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">/index</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-xl font-bold mb-4">Правила генерації артикулів:</h2>
+            <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                <li>Артикул складається з префіксу (2 літери) та номера (від 1 до 999)</li>
+                <li>Префікс визначається категорією пам'ятника</li>
+                <li>Номер генерується автоматично при створенні пам'ятника</li>
+                <li>Артикул повинен бути унікальним для кожного пам'ятника</li>
+                <li>При ручному створенні пам'ятника можна вказати власний артикул, але він повинен бути унікальним</li>
+            </ul>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-xl font-bold mb-4">Пошук за артикулом:</h2>
+            <p class="text-gray-700 mb-4">
+                Для швидкого пошуку пам'ятника за артикулом можна використовувати поле пошуку на сторінці списку пам'ятників.
+                Просто введіть артикул (наприклад, "OP123") і система знайде відповідний пам'ятник.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% macro action_buttons() %}
+<div class="neon-button-container">
+    <a href="{{ url_for('auth.register') }}" class="neon-button join">
+        <div class="neon-button-circle">
+            <div class="neon-button-circle-shadow"></div>
+            <div class="neon-button-content">
+                <i class="fas fa-user-plus neon-button-icon"></i>
+            </div>
+        </div>
+        <span class="neon-button-text">Приєднатися</span>
+        <div class="neon-button-pill">Долучитися</div>
+    </a>
+    
+    <a href="{{ url_for('main.support') }}" class="neon-button support">
+        <div class="neon-button-circle">
+            <div class="neon-button-circle-shadow"></div>
+            <div class="neon-button-content">
+                <i class="fas fa-hand-holding-heart neon-button-icon"></i>
+            </div>
+        </div>
+        <span class="neon-button-text">Підтримати</span>
+        <div class="neon-button-pill">Допомогти</div>
+    </a>
+    
+    <a href="{{ url_for('main.help') }}" class="neon-button help">
+        <div class="neon-button-circle">
+            <div class="neon-button-circle-shadow"></div>
+            <div class="neon-button-content">
+                <i class="fas fa-hands-helping neon-button-icon"></i>
+            </div>
+        </div>
+        <span class="neon-button-text">Отримати</span>
+        <div class="neon-button-pill">Потрібна допомога</div>
+    </a>
+</div>
+{% endmacro %}

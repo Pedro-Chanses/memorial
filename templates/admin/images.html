@@ -1,0 +1,112 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Управління галереєю</h2>
+        <a href="{{ url_for('admin.upload_image') }}" 
+           class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+            <i class="fas fa-upload mr-2"></i>Завантажити зображення
+        </a>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for image in images %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="aspect-w-4 aspect-h-3">
+                <!-- Зображення галереї -->
+                <div class="h-48 w-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {% if image.filename %}
+                        <img src="{{ image.filename|replace('http:', 'https:') }}" 
+                             alt="{{ image.description }}" 
+                             class="w-full h-48 object-contain hover:cursor-pointer"
+                             onclick="openModal('modal{{ image.id }}')">
+                        
+                        <!-- Модальне вікно для зображення -->
+                        <div id="modal{{ image.id }}" class="fixed inset-0 z-50 hidden overflow-hidden bg-black bg-opacity-90 flex items-center justify-center">
+                            <!-- Кнопка закриття -->
+                            <button onclick="closeModal('modal{{ image.id }}')" class="absolute top-4 right-4 text-white hover:text-gray-300 focus:outline-none z-20">
+                                <i class="fas fa-times text-2xl"></i>
+                            </button>
+                            
+                            <!-- Зображення на весь екран -->
+                            <div class="w-full h-full flex items-center justify-center p-4">
+                                <img src="{{ image.filename|replace('http:', 'https:') }}"
+                                     alt="{{ image.description }}"
+                                     class="max-w-full max-h-full object-contain">
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400 text-3xl"></i>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="p-4">
+                <p class="text-sm text-gray-600 mb-2">
+                    {{ image.description or 'Без опису' }}
+                </p>
+                
+                <div class="flex items-center justify-between mt-4">
+                    <div class="text-sm text-gray-500">
+                        {{ image.created_at.strftime('%d.%m.%Y') }}
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <a href="{{ url_for('admin.edit_image', image_id=image.id) }}" 
+                           class="text-indigo-600 hover:text-indigo-900">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        
+                        <form action="{{ url_for('admin.delete_image', image_id=image.id) }}" 
+                              method="POST" class="inline-block">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" 
+                                    class="text-red-600 hover:text-red-900"
+                                    onclick="return confirm('Ви впевнені, що хочете видалити це зображення?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Функція відкриття модального вікна
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Забороняємо прокрутку сторінки
+        }
+    }
+    
+    // Функція закриття модального вікна
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = ''; // Дозволяємо прокрутку сторінки
+        }
+    }
+    
+    // Закриття модального вікна при натисканні на Escape
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const openModals = document.querySelectorAll('.fixed.inset-0:not(.hidden)');
+            openModals.forEach(function(modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold mb-6">{{ title }}</h2>
+        
+        <div class="mb-6">
+            <img src="{{ image.path }}" alt="{{ image.description }}" class="max-w-md mx-auto">
+        </div>
+        
+        <form method="POST" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700">Опис</label>
+                <textarea name="description" id="description" rows="3"
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">{{ image.description }}</textarea>
+            </div>
+            
+            <div class="flex items-center">
+                <input type="checkbox" name="is_gallery" id="is_gallery" 
+                       class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                       {% if image.is_gallery %}checked{% endif %}>
+                <label for="is_gallery" class="ml-2 block text-sm text-gray-900">
+                    Показувати в галереї
+                </label>
+            </div>
+            
+            <div class="flex justify-end space-x-4">
+                <a href="{{ url_for('admin.images') }}" 
+                   class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                    Скасувати
+                </a>
+                <button type="submit" 
+                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Зберегти
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

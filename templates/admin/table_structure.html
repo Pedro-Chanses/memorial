@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Структура таблиці "{{ table_name }}"</h2>
+        <a href="{{ url_for('admin.admin_panel') }}" class="btn btn-secondary">Назад</a>
+    </div>
+
+    <!-- Структура таблиці -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Поля таблиці</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Поле</th>
+                            <th>Тип</th>
+                            <th>Null</th>
+                            <th>Ключ</th>
+                            <th>За замовчуванням</th>
+                            <th>Додатково</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field in structure %}
+                        <tr>
+                            <td>{{ field.Field }}</td>
+                            <td>{{ field.Type }}</td>
+                            <td>{{ field.Null }}</td>
+                            <td>{{ field.Key }}</td>
+                            <td>{{ field.Default if field.Default != None else '' }}</td>
+                            <td>{{ field.Extra }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SQL для створення таблиці -->
+    <div class="card">
+        <div class="card-header">
+            <h4>SQL для створення таблиці</h4>
+        </div>
+        <div class="card-body">
+            <pre class="bg-light p-3 border rounded"><code>{{ create_query }}</code></pre>
+        </div>
+    </div>
+</div>
+{% endblock %}

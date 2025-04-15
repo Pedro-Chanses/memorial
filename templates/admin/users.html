@@ -1,0 +1,211 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+    <div class="p-6 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900">Управління користувачами</h1>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ім'я користувача</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата реєстрації</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Адмін</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Активний</th>
+                    <th scope="col" class="relative px-6 py-3">
+                        <span class="sr-only">Дії</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for user in users %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.id }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                {% if user.avatar_url %}
+                                <img class="h-10 w-10 rounded-full" src="{{ user.avatar_url}}" alt="{{ user.username }}">
+                                {% else %}
+                                <span class="text-gray-500 text-lg">{{ user.username[0]|upper }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">{{ user.username }}</div>
+                                {% if user.name and user.username != user.name %}
+                                <div class="text-sm text-gray-500">{{ user.name }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.email }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer toggle-admin" 
+                                   {% if user.is_admin %}checked{% endif %}
+                                   data-user-id="{{ user.id }}"
+                                   {% if user.id == current_user.id %}disabled{% endif %}>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer toggle-active" 
+                                   {% if user.is_active %}checked{% endif %}
+                                   data-user-id="{{ user.id }}"
+                                   {% if user.id == current_user.id %}disabled{% endif %}>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Профіль
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+
+<!-- Модальне вікно для підтвердження зміни статусу адміністратора -->
+<div id="adminConfirmModal" class="fixed inset-0 z-50 hidden overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Підтвердження дії</h3>
+            <button type="button" class="text-gray-400 hover:text-gray-500" onclick="closeAdminModal()">
+                <span class="sr-only">Закрити</span>
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="mb-5">
+            <p class="text-sm text-gray-500" id="modalMessage">Ви впевнені, що хочете змінити статус адміністратора для цього користувача?</p>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" onclick="closeAdminModal()">
+                Скасувати
+            </button>
+            <button type="button" id="confirmButton" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Підтвердити
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentToggle = null;
+    let isGrantingAdmin = false;
+    
+    // Функції для роботи з модальним вікном
+    window.openAdminModal = function(toggle, granting) {
+        currentToggle = toggle;
+        isGrantingAdmin = granting;
+        
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        
+        if (granting) {
+            modalTitle.textContent = 'Надання прав адміністратора';
+            modalMessage.textContent = 'Ви впевнені, що хочете надати права адміністратора цьому користувачу? Це дозволить йому керувати всім сайтом, включаючи інших користувачів.';
+        } else {
+            modalTitle.textContent = 'Видалення прав адміністратора';
+            modalMessage.textContent = 'Ви впевнені, що хочете видалити права адміністратора у цього користувача? Він більше не зможе керувати сайтом.';
+        }
+        
+        document.getElementById('adminConfirmModal').classList.remove('hidden');
+    };
+    
+    window.closeAdminModal = function(confirmed = false) {
+        document.getElementById('adminConfirmModal').classList.add('hidden');
+        if (currentToggle && !confirmed) {
+            currentToggle.checked = !currentToggle.checked; // Повертаємо перемикач у початковий стан тільки якщо не підтверджено
+        }
+        currentToggle = null;
+    };
+    
+    // Обробка підтвердження в модальному вікні
+    document.getElementById('confirmButton').addEventListener('click', function() {
+        if (currentToggle) {
+            const userId = currentToggle.dataset.userId;
+            
+            fetch(`/admin/user/${userId}/toggle-admin`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    currentToggle.checked = !currentToggle.checked;
+                    alert(data.error);
+                    closeAdminModal(false);
+                } else {
+                    closeAdminModal(true); // Підтверджено зміну статусу
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                currentToggle.checked = !currentToggle.checked;
+                alert('Помилка при зміні статусу адміністратора');
+                closeAdminModal(false);
+            });
+        }
+    });
+    
+    // Обробка зміни статусу адміністратора
+    document.querySelectorAll('.toggle-admin').forEach(function(toggle) {
+        toggle.addEventListener('change', function(event) {
+            // Запобігаємо стандартній поведінці
+            event.preventDefault();
+            
+            // Визначаємо, чи надаємо права адміністратора чи забираємо
+            const isGranting = this.checked;
+            
+            // Відкриваємо модальне вікно для підтвердження
+            openAdminModal(this, isGranting);
+        });
+    });
+
+    // Обробка зміни статусу активності
+    document.querySelectorAll('.toggle-active').forEach(function(toggle) {
+        toggle.addEventListener('change', function() {
+            const userId = this.dataset.userId;
+            fetch(`/admin/user/${userId}/toggle-active`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    this.checked = !this.checked;
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.checked = !this.checked;
+                alert('Помилка при зміні статусу активності');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

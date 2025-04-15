@@ -1,0 +1,566 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .hero-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("{{ url_for('static', filename='img/hero-bg-1.webp') }}");
+        background-size: cover;
+        background-position: center;
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+    }
+    
+
+    
+    .section-title {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+        color: var(--primary-color);
+    }
+    
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 80px;
+        height: 3px;
+        background-color: var(--primary-color);
+    }
+    
+    .feature-card {
+        background-color: white;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        border-radius: 0.5rem;
+    }
+    
+    .feature-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+        color: var(--primary-color);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .monument-card {
+        background-color: white;
+        border-radius: 0.375rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .monument-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .monument-image {
+        width: 100%;
+        height: 220px;
+        object-fit: contain;
+        background-color: #f9f9f9;
+        padding: 8px;
+        transition: transform 0.5s ease;
+    }
+    
+    .monument-card:hover .monument-image {
+        transform: scale(1.5);
+    }
+    
+    .monument-info {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .category-card {
+        position: relative;
+        overflow: hidden;
+        height: 250px;
+        border-radius: 0.5rem;
+    }
+    
+    .category-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .category-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .category-card:hover .category-image {
+        transform: scale(1.05);
+    }
+    
+    .blue-button:hover {
+        background-color: #0369a1;
+    }
+    
+    .branch-card {
+        position: relative;
+        overflow: hidden;
+        height: 250px;
+        border: 1px solid #222;
+        transition: all 0.3s ease;
+    }
+    
+    .branch-card:hover {
+        border-color: #0284c7;
+    }
+    
+    .branch-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+    
+    .branch-card:hover .branch-image {
+        transform: scale(1.05);
+    }
+    
+    .branch-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+    
+    .event-card {
+        background-color: #111;
+        border: 1px solid #222;
+        transition: all 0.3s ease;
+    }
+    
+    .event-card:hover {
+        border-color: #0284c7;
+    }
+    
+    .achievement-counter {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #0284c7;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container mx-auto px-4">
+        <div class="max-w-2xl">
+            <p class="text-xl mb-8 text-gray-200">Багаторічний досвід роботи з натуральним каменем</p>
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-white">Категорії</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+                <!-- Одинарні прості -->
+                <a href="{{ url_for('main.monuments_category', category='odinarni-prosti') }}" class="bg-white bg-opacity-20 hover:bg-opacity-30 p-4 rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg">
+                    <h3 class="text-lg font-bold text-white">Одинарні прості </h3>
+                </a>
+                
+                <!-- Одинарні комбіновані -->
+                <a href="{{ url_for('main.monuments_category', category='odinarni-kombinovani') }}" class="bg-white bg-opacity-20 hover:bg-opacity-30 p-4 rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg">
+                    <h3 class="text-lg font-bold text-white">Одинарні комбіновані </h3>
+                </a>
+                
+                <!-- Подвійні пам'ятники -->
+                <a href="{{ url_for('main.monuments_category', category='podviyni-pamyatniki') }}" class="bg-white bg-opacity-20 hover:bg-opacity-30 p-4 rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg">
+                    <h3 class="text-lg font-bold text-white">Подвійні пам'ятники </h3>
+                </a>
+                
+                <!-- Дитячі пам'ятники -->
+                <a href="{{ url_for('main.monuments_category', category='dityachi-pamyatniki') }}" class="bg-white bg-opacity-20 hover:bg-opacity-30 p-4 rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg">
+                    <h3 class="text-lg font-bold text-white">Дитячі пам'ятники </h3>
+                </a>
+                
+                <!-- Пам'ятники для військових -->
+                <a href="{{ url_for('main.monuments_category', category='pamyatniki-dlya-viyskovikh') }}" class="bg-white bg-opacity-20 hover:bg-opacity-30 p-4 rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg">
+                    <h3 class="text-lg font-bold text-white">Пам'ятники для військових </h3>
+                </a>
+                
+                <!-- Аксесуари -->
+                <a href="{{ url_for('main.monuments_category', category='suputni-tovari') }}" class="bg-white bg-opacity-20 hover:bg-opacity-30 p-4 rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg">
+                    <h3 class="text-lg font-bold text-white">Аксесуари </h3>
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
+                <div class="text-center text-white">
+                    <p class="text-3xl font-bold text-primary-color">10 років</p>
+                    <p class="text-sm mt-2">досвіду роботи</p>
+                </div>
+                <div class="text-center text-white">
+                    <p class="text-3xl font-bold text-primary-color">500+</p>
+                    <p class="text-sm mt-2">виконаних замовлень</p>
+                </div>
+                <div class="text-center text-white">
+                    <p class="text-3xl font-bold text-primary-color">30 днів</p>
+                    <p class="text-sm mt-2">термін виконання</p>
+                </div>
+                <div class="text-center text-white">
+                    <p class="text-3xl font-bold text-primary-color">10 років</p>
+                    <p class="text-sm mt-2">гарантії</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Категорії пам'ятників -->
+
+
+<!-- Наші переваги -->
+<section class="py-16 bg-gray-100">
+    <div class="container mx-auto px-4">
+        <div class="mb-12 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold section-title">Наші переваги</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto mt-4">Чому клієнти обирають саме нас</p>
+        </div>
+        
+        <div class="grid md:grid-cols-4 gap-8">
+            <!-- Перевага 1 -->
+            <div class="text-center p-6">
+                <div class="mb-4 inline-block p-4 bg-primary-color bg-opacity-10 rounded-full">
+                    <i class="fas fa-gem text-3xl text-primary-color"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Якісні матеріали</h3>
+                <p class="text-gray-600">Використовуємо лише натуральний камінь високої якості</p>
+            </div>
+            
+            <!-- Перевага 2 -->
+            <div class="text-center p-6">
+                <div class="mb-4 inline-block p-4 bg-primary-color bg-opacity-10 rounded-full">
+                    <i class="fas fa-tools text-3xl text-primary-color"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Досвідчені майстри</h3>
+                <p class="text-gray-600">Наші майстри мають більше 15 років досвіду роботи</p>
+            </div>
+            
+            <!-- Перевага 3 -->
+            <div class="text-center p-6">
+                <div class="mb-4 inline-block p-4 bg-primary-color bg-opacity-10 rounded-full">
+                    <i class="fas fa-truck text-3xl text-primary-color"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Доставка та встановлення</h3>
+                <p class="text-gray-600">Безкоштовна доставка та професійна установка</p>
+            </div>
+            
+            <!-- Перевага 4 -->
+            <div class="text-center p-6">
+                <div class="mb-4 inline-block p-4 bg-primary-color bg-opacity-10 rounded-full">
+                    <i class="fas fa-shield-alt text-3xl text-primary-color"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Гарантія якості</h3>
+                <p class="text-gray-600">Надаємо гарантію на всі наші вироби та послуги</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Популярні пам'ятники -->
+<section class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold section-title">Популярні пам'ятники</h2>
+            <p class="text-gray-600 max-w-2xl mt-4">Найпопулярніші моделі пам'ятників з нашого каталогу</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8 mt-12">
+            {% for monument in popular_monuments %}
+            <div class="monument-card overflow-hidden">
+                {% if monument.images.first() %}
+                <img src="{{ monument.images.first().filename }}" 
+                     alt="{{ monument.name }}" 
+                     class="monument-image">
+                {% else %}
+                <div class="monument-image bg-gray-200 flex items-center justify-center">
+                    <span class="text-gray-400"><i class="fas fa-image fa-2x"></i></span>
+                </div>
+                {% endif %}
+                <div class="monument-info">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-semibold text-gray-800 hover:text-primary-color">{{ monument.name }}</h3>
+                        {% if monument.is_new %}
+                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded">Новинка</span>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 mb-2">Артикул: {{ monument.article }}</p>
+                    
+                    {% if monument.has_discount %}
+                    <div class="flex items-center mb-2">
+                        <span class="text-xl font-bold text-gray-800">{{ monument.formatted_price }}</span>
+                        <span class="text-sm text-gray-500 line-through ml-2">{{ monument.formatted_old_price }}</span>
+                        <span class="text-sm text-white bg-red-500 rounded px-1 ml-2">-{{ monument.discount_percent }}%</span>
+                    </div>
+                    {% else %}
+                    <div class="mb-2">
+                        <span class="text-xl font-bold text-gray-800">{{ monument.formatted_price }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">{{ monument.availability }}</span>
+                        <a href="{{ url_for('main.monument_detail', monument_id=monument.id) }}" class="text-primary-color hover:underline">
+                            Детальніше
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-12">
+            <a href="{{ url_for('main.monuments') }}" class="primary-button font-medium py-2 px-6 rounded-md hover:shadow-lg inline-block">
+                Переглянути всі пам'ятники
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Відгуки клієнтів -->
+<section class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="mb-12 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold section-title">Відгуки клієнтів</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto mt-4">Що про нас говорять наші клієнти</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Відгук 1 -->
+            <div class="testimonial-card p-6 rounded-lg">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center mr-4">
+                        <i class="fas fa-user text-gray-500"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold">Олександр Петренко</h4>
+                        <div class="text-primary-color">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-600 italic">"Дуже задоволений якістю виконання пам'ятника. Все було зроблено вчасно та якісно. Майстри допомогли з вибором дизайну та матеріалу. Рекомендую!"</p>
+            </div>
+            
+            <!-- Відгук 2 -->
+            <div class="testimonial-card p-6 rounded-lg">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center mr-4">
+                        <i class="fas fa-user text-gray-500"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold">Марія Ковальчук</h4>
+                        <div class="text-primary-color">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-600 italic">"Замовляла подвійний пам'ятник для батьків. Все було виконано на вищому рівні. Особливо вдячна за допомогу з оформленням документів та встановленням."</p>
+            </div>
+            
+            <!-- Відгук 3 -->
+            <div class="testimonial-card p-6 rounded-lg">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center mr-4">
+                        <i class="fas fa-user text-gray-500"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold">Василь Ткаченко</h4>
+                        <div class="text-primary-color">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-600 italic">"Звернувся за рекомендацією друзів і не пошкодував. Ціни адекватні, робота виконана якісно. Особливо сподобалось те, що можна було замовити індивідуальний дизайн."</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Статті Section -->
+<section class="py-20 bg-gray-100">
+    <div class="container mx-auto px-4">
+        <div class="mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold section-title">Статті</h2>
+            <p class="text-gray-600 max-w-2xl mt-4">Останні корисні статті про пам'ятники</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8 mt-12">
+            {% for news in latest_news %}
+            <div class="news-card rounded-md overflow-hidden">
+                {% if news.images.first() %}
+                <img src="{{ news.images.first().filename }}" 
+                     alt="{{ news.title }}" 
+                     class="w-full h-48 object-cover"
+                     loading="lazy">
+                {% else %}
+                <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                    <i class="fas fa-newspaper text-4xl text-gray-400"></i>
+                </div>
+                {% endif %}
+                <div class="p-6">
+                    <h3 class="text-lg font-bold mb-2 text-gray-800">{{ news.title }}</h3>
+                    <p class="text-gray-600 mb-4">{{ news.content|truncate(100) }}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-500">
+                            <i class="far fa-calendar-alt mr-2"></i>
+                            {{ news.created_at.strftime('%d.%m.%Y') }}
+                        </span>
+                        <a href="{{ url_for('news.view', news_id=news.id) }}" 
+                           class="text-primary-color hover:underline font-medium inline-flex items-center">
+                            Читати <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if latest_news %}
+        <div class="text-center mt-12">
+            <a href="{{ url_for('news.index') }}" 
+               class="primary-button font-medium py-3 px-8 rounded-md transition hover:shadow-lg">
+                Всі статті
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Контакти -->
+<section id="contacts" class="py-20 bg-gray-800 text-white">
+    <div class="container mx-auto px-4">
+        <div class="mb-12 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold section-title">Зв'яжіться з нами</h2>
+            <p class="text-gray-300 max-w-2xl mx-auto mt-4">Ми завжди готові відповісти на ваші запитання та допомогти з вибором</p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-12">
+            <!-- Контактна інформація -->
+            <div>
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold mb-4">Контактна інформація</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="text-primary-color mr-4 mt-1">
+                                <i class="fas fa-map-marker-alt text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">Адреса</h4>
+                                <p class="text-gray-300">Волинська область</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="text-primary-color mr-4 mt-1">
+                                <i class="fas fa-phone-alt text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">Телефон</h4>
+                                <p class="text-gray-300">+380683323005</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="text-primary-color mr-4 mt-1">
+                                <i class="fas fa-envelope text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">Email</h4>
+                                <p class="text-gray-300">memorial@44840@gmail.com</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="text-primary-color mr-4 mt-1">
+                                <i class="fas fa-clock text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">Час роботи</h4>
+                                <p class="text-gray-300">Пн-Пт: 9:00 - 18:00<br>Сб: 10:00 - 15:00<br>Нд: вихідний</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Форма зворотного зв'язку -->
+            <div>
+                <div class="bg-gray-700 p-8 rounded-lg">
+                    <h3 class="text-xl font-bold mb-6">Ми в соціальних мережах</h3>
+                    
+                    <div class="space-y-6">
+                        <p class="text-base">Підписуйтесь на наші соціальні мережі, щоб бути в курсі новин та акцій.</p>
+                        
+                        <div class="grid grid-cols-3 gap-4">
+                            <a href="https://t.me/dets_stone" target="_blank" class="flex flex-col items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
+                                <i class="fab fa-telegram text-4xl text-[#0088cc] mb-2"></i>
+                                <span class="text-sm font-medium">Telegram</span>
+                            </a>
+                            
+                            <a href="https://www.instagram.com/dets_stone" target="_blank" class="flex flex-col items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
+                                <i class="fab fa-instagram text-4xl text-[#E1306C] mb-2"></i>
+                                <span class="text-sm font-medium">Instagram</span>
+                            </a>
+                            
+                            <a href="https://www.facebook.com/dets.stone" target="_blank" class="flex flex-col items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
+                                <i class="fab fa-facebook text-4xl text-[#1877F2] mb-2"></i>
+                                <span class="text-sm font-medium">Facebook</span>
+                            </a>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p class="font-medium mb-3">Також ви можете зв'язатися з нами:</p>
+                            <div class="flex items-center space-x-2 mb-2">
+                                <i class="fas fa-phone-alt text-primary-color"></i>
+                                <span>+380 68 332 3005</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-envelope text-primary-color"></i>
+                                <a href="mailto:memorial@44840@gmail.com" class="hover:underline">memorial@44840@gmail.com</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h1 class="text-center mb-4">Створити оголошення</h1>
+                    
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                            {% for error in form.title.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.body.label(class="form-label") }}
+                            {{ form.body(class="form-control" + (" is-invalid" if form.body.errors else ""), rows="5") }}
+                            {% for error in form.body.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.location.label(class="form-label") }}
+                                {{ form.location(class="form-control" + (" is-invalid" if form.location.errors else "")) }}
+                                {% for error in form.location.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.category.label(class="form-label") }}
+                                {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else "")) }}
+                                {% for error in form.category.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.start_date.label(class="form-label") }}
+                                {{ form.start_date(class="form-control" + (" is-invalid" if form.start_date.errors else ""),
+                                                 type="text",
+                                                 placeholder="дд.мм.рррр гг:хх",
+                                                 id="start_date") }}
+                                <small class="form-text text-muted">Формат: 25.03.2025 08:30</small>
+                                {% for error in form.start_date.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.end_date.label(class="form-label") }}
+                                {{ form.end_date(class="form-control" + (" is-invalid" if form.end_date.errors else ""),
+                                               type="text",
+                                               placeholder="дд.мм.рррр гг:хх",
+                                               id="end_date") }}
+                                <small class="form-text text-muted">Формат: 25.03.2025 08:30</small>
+                                {% for error in form.end_date.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.contact_info.label(class="form-label") }}
+                            {{ form.contact_info(class="form-control" + (" is-invalid" if form.contact_info.errors else "")) }}
+                            {% for error in form.contact_info.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.images.label(class="form-label") }}
+                            {{ form.images(class="form-control" + (" is-invalid" if form.images.errors else ""),
+                                         multiple="multiple",
+                                         accept="image/jpeg,image/png,image/gif") }}
+                            <small class="form-text text-muted">
+                                Дозволені формати: JPG, JPEG, PNG, GIF<br>
+                                Максимальний розмір одного файлу: 5 МБ<br>
+                                Можна завантажити до 5 зображень
+                            </small>
+                            {% for error in form.images.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <div id="imagePreview" class="mt-2 row g-2"></div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Попередній перегляд зображень
+document.getElementById('images').addEventListener('change', function(e) {
+    var preview = document.getElementById('imagePreview');
+    preview.innerHTML = '';
+    
+    for (var i = 0; i < this.files.length; i++) {
+        let file = this.files[i];
+        if (!file.type.startsWith('image/')){ continue }
+        
+        let col = document.createElement('div');
+        col.className = 'col-4';
+        
+        let img = document.createElement('img');
+        img.classList.add('img-fluid', 'rounded');
+        img.file = file;
+        
+        let reader = new FileReader();
+        reader.onload = (function(aImg) { 
+            return function(e) { 
+                aImg.src = e.target.result; 
+            }; 
+        })(img);
+        
+        reader.readAsDataURL(file);
+        col.appendChild(img);
+        preview.appendChild(col);
+    }
+});
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/uk.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const config = {
+        enableTime: true,
+        dateFormat: "d.m.Y H:i",
+        locale: "uk",
+        time_24hr: true,
+        minuteIncrement: 5
+    };
+    
+    flatpickr("#start_date", config);
+    flatpickr("#end_date", config);
+});
+</script>
+{% endblock %}
+{% endblock %}
