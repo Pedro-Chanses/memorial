@@ -102,18 +102,20 @@
             </a>
             
             <!-- Поділитися -->
-            <div class="flex space-x-2">
-                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank" rel="noopener" 
-                   class="inline-flex items-center p-2 border border-transparent rounded-full text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                    <i class="fab fa-facebook-f"></i>
+            <div class="grid grid-cols-3 gap-4">
+                <a href="https://t.me/dets_stone" target="_blank" class="flex flex-col items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
+                    <i class="fab fa-telegram text-4xl text-[#0088cc] mb-2"></i>
+                    <span class="text-sm font-medium">Telegram</span>
                 </a>
-                <a href="https://t.me/share/url?url={{ request.url }}&text={{ news.title }}" target="_blank" rel="noopener" 
-                   class="inline-flex items-center p-2 border border-transparent rounded-full text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                    <i class="fab fa-telegram-plane"></i>
+                
+                <a href="https://www.instagram.com/dets_stone" target="_blank" class="flex flex-col items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
+                    <i class="fab fa-instagram text-4xl text-[#E1306C] mb-2"></i>
+                    <span class="text-sm font-medium">Instagram</span>
                 </a>
-                <a href="viber://forward?text={{ news.title }} {{ request.url }}" 
-                   class="inline-flex items-center p-2 border border-transparent rounded-full text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
-                    <i class="fab fa-viber"></i>
+                
+                <a href="https://www.facebook.com/dets.stone" target="_blank" class="flex flex-col items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
+                    <i class="fab fa-facebook text-4xl text-[#1877F2] mb-2"></i>
+                    <span class="text-sm font-medium">Facebook</span>
                 </a>
             </div>
         </div>

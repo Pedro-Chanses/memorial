@@ -15,7 +15,7 @@
         
         <!-- Форма редагування -->
         <div class="bg-white rounded-lg shadow-sm overflow-hidden p-6 md:p-8">
-            <form id="editWorkForm" method="POST" enctype="multipart/form-data">
+            <form id="editWorkForm" method="POST" action="{{ url_for('own_works.edit', work_id=work.id) }}" enctype="multipart/form-data">
                 {{ form.csrf_token }}
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -140,7 +140,7 @@
                     <!-- Нові зображення -->
                     <div class="col-span-1 md:col-span-2" id="upload-images">
                         <h3 class="text-lg font-medium text-gray-900 mb-3">Додати нові зображення</h3>
-                        <form action="{{ url_for('own_works.upload_images', work_id=work.id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <form action="/own-works/upload_images/{{ work.id }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-500 transition-colors">
                                 <div class="space-y-2">
@@ -175,10 +175,10 @@
                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 mr-4">
                         Скасувати
                     </a>
-                    <button type="submit" 
-                            class="px-4 py-2 bg-red-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <a href="#" id="saveChangesBtn" onclick="document.getElementById('editWorkForm').submit(); return false;"
+                            class="px-4 py-2 bg-red-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 inline-block text-center">
                         Зберегти зміни
-                    </button>
+                    </a>
                 </div>
             </form>
         </div>
@@ -190,14 +190,18 @@
 <script>
     // Ініціалізація редактора для поля контенту
     document.addEventListener('DOMContentLoaded', function() {
-        if (typeof ClassicEditor !== 'undefined') {
-            ClassicEditor
-                .create(document.querySelector('#{{ form.content.id }}'), {
-                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo']
-                })
-                .catch(error => {
-                    console.error(error);
-                });
+        try {
+            if (typeof ClassicEditor !== 'undefined') {
+                ClassicEditor
+                    .create(document.querySelector('#{{ form.content.id }}'), {
+                        toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo']
+                    })
+                    .catch(error => {
+                        console.error('Помилка ініціалізації редактора:', error);
+                    });
+            }
+        } catch (e) {
+            console.error('Помилка при спробі ініціалізації редактора:', e);
         }
         
         // Відновлення позиції прокрутки після перезавантаження сторінки
@@ -342,6 +346,9 @@
     // Ініціалізація обробника файлів при завантаженні сторінки
     document.addEventListener('DOMContentLoaded', function() {
         handleFileSelect();
+        
+        // Простий логгер для перевірки
+        console.log('Сторінка редагування власних робіт завантажена');
     });
     
     // Функція для показу модального вікна підтвердження видалення зображення

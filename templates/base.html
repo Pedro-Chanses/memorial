@@ -387,9 +387,6 @@
                     <a href="{{ url_for('admin.index') }}" class="block hover:text-sky-400 transition">
                         <i class="fas fa-cog"></i> Адмін панель
                     </a>
-                    <a href="{{ url_for('news.create') }}" class="block hover:text-sky-400 transition">
-                        <i class="fas fa-plus"></i> Додати новину
-                    </a>
                     {% endif %}
                     <a href="{{ url_for('auth.profile') }}" class="block hover:text-sky-400 transition">
                         <i class="fas fa-user"></i> {{ current_user.name }}

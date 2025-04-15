@@ -82,23 +82,8 @@ def users():
                          title='Користувачі',
                          users=users)
 
-@admin_bp.route('/branches')
-@admin_required
-def branches():
-    """Управління філіями"""
-    branches = Branch.query.all()
-    return render_template('admin/branches.html',
-                         title='Філії',
-                         branches=branches)
 
-@admin_bp.route('/events')
-@admin_required
-def events():
-    """Управління подіями"""
-    events = Event.query.order_by(Event.start_date.desc()).all()
-    return render_template('admin/events.html',
-                         title='Події',
-                         events=events)
+
 
 @admin_bp.route('/news')
 @admin_required
@@ -118,14 +103,7 @@ def own_works():
                          title='Власні роботи',
                          own_works=own_works_items)
 
-@admin_bp.route('/achievements')
-@admin_required
-def achievements():
-    """Управління досягненнями"""
-    achievements = Achievement.query.order_by(Achievement.date.desc()).all()
-    return render_template('admin/achievements.html',
-                         title='Досягнення',
-                         achievements=achievements)
+
 
 @admin_bp.route('/images')
 @admin_required

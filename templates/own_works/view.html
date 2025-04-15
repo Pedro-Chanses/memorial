@@ -83,7 +83,7 @@
                 {% for image in work.images %}
                 <div class="gallery-item">
                     <a href="{{ image.image_url|replace('http:', 'https:') }}" data-lightbox="gallery" data-title="{{ work.title }}">
-                        <img src="{{ image.thumbnail_url|replace('http:', 'https:') }}" 
+                        <img src="{{ image.image_url|replace('http:', 'https:') }}" 
                              class="w-full h-40 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300" 
                              alt="{{ work.title }}">
                     </a>
