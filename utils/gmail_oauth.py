@@ -20,7 +20,10 @@ def create_oauth_flow(for_gmail=False):
             "redirect_uris": [
                 "http://127.0.0.1:5000/auth/oauth2callback",
                 "http://localhost:5000/auth/oauth2callback",
-                "https://okinava.onrender.com/auth/oauth2callback"
+                "https://memorial-05p8.onrender.com/auth/oauth2callback",
+                "https://memorial-05p8.onrender.com/auth/authorize",
+                "https://memorial-app.herokuapp.com/auth/authorize",
+                "https://memorial-app.herokuapp.com/auth/oauth2callback"
             ]
         }
     }
