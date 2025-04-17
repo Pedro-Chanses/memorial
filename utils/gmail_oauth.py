@@ -30,17 +30,16 @@ def create_oauth_flow(for_gmail=False):
     
     # Визначаємо поточний URI для перенаправлення
     if os.environ.get('RENDER') == 'true':
-        # Якщо ми на Render, використовуємо URL сайту на Render
         render_url = os.environ.get('RENDER_EXTERNAL_URL', '')
         if render_url:
             redirect_uri = f"{render_url}/auth/oauth2callback"
         else:
-            # Якщо URL не вказано, використовуємо поточний хост
             redirect_uri = f"https://{request.host}/auth/oauth2callback"
     elif request.host.startswith('localhost'):
         redirect_uri = "http://localhost:5000/auth/oauth2callback"
     else:
-        redirect_uri = "http://127.0.0.1:5000/auth/oauth2callback"
+        # Для Heroku та інших продакшн-серверів
+        redirect_uri = f"https://{request.host}/auth/oauth2callback"
     
     # Різні області доступу для Gmail і звичайної авторизації
     scopes = ['https://www.googleapis.com/auth/gmail.send'] if for_gmail else [
