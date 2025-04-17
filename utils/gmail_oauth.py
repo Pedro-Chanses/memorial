@@ -10,50 +10,91 @@ from google.oauth2 import id_token
 import google.auth.transport.requests
 
 def create_oauth_flow(for_gmail=False):
-    """Створює об'єкт Flow для OAuth 2.0"""
-    client_config = {
-        "web": {
-            "client_id": current_app.config['GOOGLE_CLIENT_ID'],
-            "client_secret": current_app.config['GOOGLE_CLIENT_SECRET'],
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-            "redirect_uris": [
-                "http://127.0.0.1:5000/auth/oauth2callback",
-                "http://localhost:5000/auth/oauth2callback",
-                "https://memorial-app-835445eb1cf7.herokuapp.com/auth/oauth2callback",
-                "https://memorial-app-835445eb1cf7.herokuapp.com/auth/authorize",
-                "https://memorial-05p8.onrender.com/auth/oauth2callback",
-                "https://memorial-05p8.onrender.com/auth/authorize"
-            ]
+    """Створює об'єкт Flow для OAuth 2.0
+    
+    Ця функція динамічно визначає правильний redirect_uri залежно від середовища виконання:
+    - Локальне середовище: http://localhost:5000/auth/oauth2callback
+    - Render: визначається за RENDER_EXTERNAL_URL або за request.host
+    - Heroku та інші продакшн: https://{request.host}/auth/oauth2callback
+    
+    ВАЖЛИВО: Всі ці redirect_uri мають бути додані у Google Cloud Console в налаштуваннях OAuth 2.0 Client ID.
+    Після зміни налаштувань у Google Cloud Console може знадобитися до кількох годин для застосування змін.
+    
+    Args:
+        for_gmail (bool): Якщо True, використовується для Gmail API, інакше для звичайної авторизації
+    
+    Returns:
+        Flow: Об'єкт Flow для OAuth 2.0 авторизації
+    """
+    try:
+        # Конфігурація клієнта OAuth
+        client_config = {
+            "web": {
+                "client_id": current_app.config['GOOGLE_CLIENT_ID'],
+                "client_secret": current_app.config['GOOGLE_CLIENT_SECRET'],
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "redirect_uris": [
+                    # Локальне середовище
+                    "http://127.0.0.1:5000/auth/oauth2callback",
+                    "http://localhost:5000/auth/oauth2callback",
+                    # Heroku
+                    "https://memorial-app-835445eb1cf7.herokuapp.com/auth/oauth2callback",
+                    "https://memorial-app-835445eb1cf7.herokuapp.com/auth/authorize",
+                    # Render
+                    "https://memorial-05p8.onrender.com/auth/oauth2callback",
+                    "https://memorial-05p8.onrender.com/auth/authorize"
+                ]
+            }
         }
-    }
-    
-    # Визначаємо поточний URI для перенаправлення
-    if os.environ.get('RENDER') == 'true':
-        render_url = os.environ.get('RENDER_EXTERNAL_URL', '')
-        if render_url:
-            redirect_uri = f"{render_url}/auth/oauth2callback"
+        
+        # Визначаємо поточний URI для перенаправлення залежно від середовища
+        if os.environ.get('RENDER') == 'true':
+            # Середовище Render
+            render_url = os.environ.get('RENDER_EXTERNAL_URL', '')
+            if render_url:
+                redirect_uri = f"{render_url}/auth/oauth2callback"
+            else:
+                redirect_uri = f"https://{request.host}/auth/oauth2callback"
+                current_app.logger.info(f"RENDER середовище без RENDER_EXTERNAL_URL, використовуємо request.host: {request.host}")
+        elif request.host.startswith('localhost') or request.host.startswith('127.0.0.1'):
+            # Локальне середовище
+            if request.host.startswith('localhost'):
+                redirect_uri = "http://localhost:5000/auth/oauth2callback"
+            else:
+                redirect_uri = "http://127.0.0.1:5000/auth/oauth2callback"
         else:
+            # Heroku та інші продакшн-сервери
             redirect_uri = f"https://{request.host}/auth/oauth2callback"
-    elif request.host.startswith('localhost'):
-        redirect_uri = "http://localhost:5000/auth/oauth2callback"
-    else:
-        # Для Heroku та інших продакшн-серверів
-        redirect_uri = f"https://{request.host}/auth/oauth2callback"
-    
-    # Різні області доступу для Gmail і звичайної авторизації
-    scopes = ['https://www.googleapis.com/auth/gmail.send'] if for_gmail else [
-        'openid',
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile'
-    ]
-    
-    flow = Flow.from_client_config(
-        client_config,
-        scopes=scopes,
-        redirect_uri=redirect_uri
-    )
-    return flow
+            current_app.logger.info(f"Використовуємо продакшн redirect_uri для хоста: {request.host}")
+        
+        # Різні області доступу для Gmail і звичайної авторизації
+        if for_gmail:
+            scopes = ['https://www.googleapis.com/auth/gmail.send']
+        else:
+            scopes = [
+                'openid',
+                'https://www.googleapis.com/auth/userinfo.email',
+                'https://www.googleapis.com/auth/userinfo.profile'
+            ]
+        
+        # Створюємо Flow з конфігурації клієнта
+        flow = Flow.from_client_config(
+            client_config,
+            scopes=scopes,
+            redirect_uri=redirect_uri
+        )
+        
+        # Діагностика redirect_uri
+        current_app.logger.info(f"OAuth DEBUG: Using redirect_uri={redirect_uri}, host={request.host}")
+        print(f"DEBUG OAUTH: Using redirect_uri={redirect_uri}, host={request.host}")
+        
+        return flow
+        
+    except Exception as e:
+        # Логуємо помилку і прокидаємо її далі
+        current_app.logger.error(f"OAuth flow creation error: {str(e)}")
+        raise
 
 def get_google_user_info(credentials):
     """Отримує інформацію про користувача Google"""

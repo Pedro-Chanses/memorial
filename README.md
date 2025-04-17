@@ -204,6 +204,102 @@ flask db current
 flask db history
 ```
 
+## Налаштування Google OAuth
+
+Проект використовує Google OAuth для авторизації користувачів. Для налаштування OAuth потрібно:
+
+1. Створити проект у [Google Cloud Console](https://console.cloud.google.com/)
+2. Налаштувати OAuth 2.0 Client ID:
+   - Тип: Web application
+   - Додати Authorized JavaScript origins:
+     - http://localhost:5000 (для розробки)
+     - https://memorial-app-835445eb1cf7.herokuapp.com (для Heroku)
+     - https://memorial-05p8.onrender.com (для Render)
+   - Додати Authorized redirect URIs:
+     - http://localhost:5000/auth/oauth2callback (для розробки)
+     - http://127.0.0.1:5000/auth/oauth2callback (для розробки)
+     - https://memorial-app-835445eb1cf7.herokuapp.com/auth/oauth2callback (для Heroku)
+     - https://memorial-05p8.onrender.com/auth/oauth2callback (для Render)
+
+3. Додати Client ID та Client Secret у файл .env:
+```env
+GOOGLE_CLIENT_ID=ваш-client-id
+GOOGLE_CLIENT_SECRET=ваш-client-secret
+```
+
+### Важливі примітки щодо OAuth
+
+- При зміні redirect URIs у Google Cloud Console може знадобитися до кількох годин для застосування змін
+- Переконайтеся, що всі redirect URIs точно співпадають з тими, що використовуються у коді
+- Для локальної розробки потрібно встановити змінну середовища `OAUTHLIB_INSECURE_TRANSPORT=1`
+
+## Деплой
+
+### Heroku
+
+1. Створіть новий додаток на Heroku:
+```bash
+heroku create memorial-app
+```
+
+2. Додайте PostgreSQL:
+```bash
+heroku addons:create heroku-postgresql:hobby-dev
+```
+
+3. Налаштуйте змінні середовища:
+```bash
+heroku config:set FLASK_ENV=production
+heroku config:set SECRET_KEY=ваш-секретний-ключ
+heroku config:set GOOGLE_CLIENT_ID=ваш-client-id
+heroku config:set GOOGLE_CLIENT_SECRET=ваш-client-secret
+# Додайте інші змінні середовища за потреби
+```
+
+4. Деплой коду:
+```bash
+git push heroku main
+```
+
+5. Запустіть міграції:
+```bash
+heroku run flask db upgrade
+```
+
+### Render
+
+1. Створіть новий Web Service на [Render](https://render.com/)
+2. Підключіть репозиторій GitHub
+3. Налаштуйте:
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `gunicorn app:app`
+4. Додайте змінні середовища (Environment Variables):
+   - `FLASK_ENV=production`
+   - `SECRET_KEY=ваш-секретний-ключ`
+   - `GOOGLE_CLIENT_ID=ваш-client-id`
+   - `GOOGLE_CLIENT_SECRET=ваш-client-secret`
+   - `RENDER=true`
+   - Інші необхідні змінні
+5. Створіть PostgreSQL базу даних на Render та підключіть її до вашого сервісу
+
+## Вирішення проблем
+
+### Проблеми з Google OAuth
+
+- **Помилка redirect_uri_mismatch**: Переконайтеся, що URI у Google Cloud Console точно співпадає з URI, який використовується у коді
+- **Затримка змін**: Після зміни налаштувань у Google Cloud Console може знадобитися до кількох годин для застосування змін
+- **Проблеми з локальною розробкою**: Встановіть `OAUTHLIB_INSECURE_TRANSPORT=1` для тестування OAuth локально
+
+### Проблеми з деплоєм
+
+- **Помилки міграції**: Перевірте логи `heroku logs --tail` або логи на Render
+- **Статичні файли**: Переконайтеся, що WhiteNoise правильно налаштований для обслуговування статичних файлів
+- **Помилки бази даних**: Перевірте налаштування DATABASE_URL та з'єднання з базою даних
+
+```bash
+flask db history
+```
+
 **Важливо**: Не змінюйте існуючі міграції, які вже були застосовані. Завжди створюйте нові міграції для змін.
 
 7. Створіть адміністратора:

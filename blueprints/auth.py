@@ -153,13 +153,7 @@ def authorize():
     # Визначаємо, чи це для Gmail API чи для звичайної авторизації
     for_gmail = request.args.get('for_gmail', 'false').lower() == 'true'
     
-    # Створюємо flow з правильним redirect_uri
     flow = create_oauth_flow(for_gmail=for_gmail)
-    
-    # Логуємо, який redirect_uri використовується (для діагностики)
-    current_app.logger.info(f"OAUTH DEBUG - Using redirect_uri: {flow.redirect_uri}")
-    print(f"OAUTH DEBUG - Using redirect_uri: {flow.redirect_uri}")
-    
     authorization_url, state = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true'
