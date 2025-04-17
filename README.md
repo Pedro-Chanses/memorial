@@ -51,7 +51,7 @@
 
 1. Клонуйте репозиторій:
 ```bash
-git clone https://github.com/mashmanuc/memorial.git
+git clone https://github.com/Pedro-Chanses/memorial.git
 cd memorial
 ```
 
