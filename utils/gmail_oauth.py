@@ -22,8 +22,8 @@ def create_oauth_flow(for_gmail=False):
                 "http://localhost:5000/auth/oauth2callback",
                 "https://memorial-05p8.onrender.com/auth/oauth2callback",
                 "https://memorial-05p8.onrender.com/auth/authorize",
-                "https://memorial-app.herokuapp.com/auth/authorize",
-                "https://memorial-app.herokuapp.com/auth/oauth2callback"
+                "https://memorial-app-835445eb1cf7.herokuapp.com/auth/oauth2callback",
+                "https://memorial-app-835445eb1cf7.herokuapp.com/auth/authorize"
             ]
         }
     }
