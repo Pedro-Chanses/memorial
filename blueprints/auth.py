@@ -75,17 +75,6 @@ def register():
 @auth_bp.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
-    # Додаємо логування, щоб зрозуміти, коли викликається функція logout
-    print("\n\n=== LOGOUT FUNCTION CALLED ===\n")
-    print(f"User: {current_user.username if current_user.is_authenticated else 'Not authenticated'}")
-    print(f"Request path: {request.path}")
-    print(f"Request method: {request.method}")
-    print(f"Referrer: {request.referrer}")
-    print(f"URL: {request.url}")
-    print(f"Form data: {request.form}")
-    print(f"Query string: {request.args}")
-    print(f"Session before logout: {session}")
-    
     # Перевіряємо, чи це не помилковий виклик після редагування пам'ятника
     if request.referrer and ('/admin/monuments/' in request.referrer or '/admin/monuments' in request.referrer):
         print(f"\n!!! LOGOUT CALLED FROM MONUMENTS PAGE OR EDIT PAGE !!!")
@@ -140,10 +129,6 @@ def logout():
     
     # Очищаємо всю сесію
     session.clear()
-    
-    print(f"User {user_info['username']} (id={user_info['id']}) logged out")
-    print(f"Session after logout: {session}")
-    
     flash('Ви успішно вийшли з системи.', 'success')
     
     # Створюємо відповідь з видаленням cookie
