@@ -43,7 +43,9 @@ def create_oauth_flow(for_gmail=False):
                     "https://memorial-app-835445eb1cf7.herokuapp.com/auth/authorize",
                     # Render
                     "https://memorial-05p8.onrender.com/auth/oauth2callback",
-                    "https://memorial-05p8.onrender.com/auth/authorize"
+                    "https://memorial-05p8.onrender.com/auth/authorize",
+                    "https://stoune.pp.ua/auth/oauth2callback",
+                    "https://stoune.pp.ua/auth/authorize"
                 ]
             }
         }
